@@ -13,6 +13,7 @@ type RecentRun = {
 
 type RecentRunsTableProps = {
   runs: RecentRun[]
+  emptyMessage?: string
 }
 
 const numberFormatter = new Intl.NumberFormat('en-US', {
@@ -65,7 +66,10 @@ function calculateCostPerGram(run: RecentRun) {
   return totalCost / run.output_weight_g
 }
 
-export function RecentRunsTable({ runs }: RecentRunsTableProps) {
+export function RecentRunsTable({
+  runs,
+  emptyMessage = 'No runs yet. Add your first run to start tracking metrics.',
+}: RecentRunsTableProps) {
   return (
     <section className="space-y-3">
       <div>
@@ -76,7 +80,7 @@ export function RecentRunsTable({ runs }: RecentRunsTableProps) {
       <div className="overflow-hidden rounded-xl border bg-white">
         {runs.length === 0 ? (
           <div className="p-6 text-sm text-gray-600">
-            No runs yet. Add your first run to start tracking metrics.
+            {emptyMessage}
           </div>
         ) : (
           <div className="overflow-x-auto">
