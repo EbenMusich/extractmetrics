@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useMemo, useState, type FormEvent } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useFormStatus } from 'react-dom'
 import { deleteRunAction } from '@/app/dashboard/actions'
 import {
@@ -25,12 +25,13 @@ function normalizeSearchValue(value: string | null | undefined) {
   return value?.trim().toLowerCase() ?? ''
 }
 
-function DeleteRunButton() {
+function DeleteRunButton({ onClick }: { onClick: () => void }) {
   const { pending } = useFormStatus()
 
   return (
     <button
-      type="submit"
+      type="button"
+      onClick={onClick}
       disabled={pending}
       className="rounded-md border border-red-200 px-3 py-1.5 text-xs font-medium text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
     >
@@ -39,15 +40,28 @@ function DeleteRunButton() {
   )
 }
 
+function DeleteRunForm({ runId }: { runId: string }) {
+  const formRef = useRef<HTMLFormElement>(null)
+
+  function handleDeleteClick() {
+    if (!window.confirm('Delete this run? This cannot be undone.')) {
+      return
+    }
+
+    formRef.current?.requestSubmit()
+  }
+
+  return (
+    <form ref={formRef} action={deleteRunAction}>
+      <input type="hidden" name="run_id" value={runId} />
+      <DeleteRunButton onClick={handleDeleteClick} />
+    </form>
+  )
+}
+
 export function RunHistoryTable({ runs }: RunHistoryTableProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
-
-  function handleDeleteSubmit(event: FormEvent<HTMLFormElement>) {
-    if (!window.confirm('Delete this run? This cannot be undone.')) {
-      event.preventDefault()
-    }
-  }
 
   const filteredRuns = useMemo(() => {
     const normalizedSearchTerm = searchTerm.trim().toLowerCase()
@@ -142,10 +156,7 @@ export function RunHistoryTable({ runs }: RunHistoryTableProps) {
                         >
                           Edit
                         </Link>
-                        <form action={deleteRunAction} onSubmit={handleDeleteSubmit}>
-                          <input type="hidden" name="run_id" value={run.id} />
-                          <DeleteRunButton />
-                        </form>
+                        <DeleteRunForm runId={run.id} />
                       </div>
                     </td>
                   </tr>

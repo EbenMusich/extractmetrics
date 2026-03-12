@@ -288,9 +288,10 @@ export async function deleteRunAction(formData: FormData) {
   const runId = readRunId(formData)
   const {
     data: { user },
+    error: authError,
   } = await supabase.auth.getUser()
 
-  if (!user) {
+  if (authError || !user) {
     redirect('/login')
   }
 
@@ -298,11 +299,21 @@ export async function deleteRunAction(formData: FormData) {
     redirect('/dashboard/runs')
   }
 
-  await supabase
+  const { data: deletedRun, error } = await supabase
     .from('runs')
     .delete()
     .eq('id', runId)
     .eq('user_id', user.id)
+    .select('id')
+    .maybeSingle()
+
+  if (error) {
+    throw new Error(`Unable to delete run: ${error.message}`)
+  }
+
+  if (!deletedRun) {
+    redirect('/dashboard/runs')
+  }
 
   revalidateRunPages()
   redirect('/dashboard/runs')
