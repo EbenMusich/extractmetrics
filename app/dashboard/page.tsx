@@ -11,6 +11,7 @@ type DashboardRun = {
   output_type: string
   biomass_input_g: number | null
   output_weight_g: number | null
+  labor_cost: number | null
   material_cost: number | null
   utility_cost: number | null
   other_cost: number | null
@@ -30,7 +31,7 @@ export default async function DashboardPage() {
   const { data, error } = await supabase
     .from('runs')
     .select(
-      'id, run_date, strain_name, grower_name, output_type, biomass_input_g, output_weight_g, material_cost, utility_cost, other_cost, created_at'
+      'id, run_date, strain_name, grower_name, output_type, biomass_input_g, output_weight_g, labor_cost, material_cost, utility_cost, other_cost, created_at'
     )
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })

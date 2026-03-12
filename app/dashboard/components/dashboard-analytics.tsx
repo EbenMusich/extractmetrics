@@ -5,6 +5,7 @@ import {
   DashboardDateFilter,
   type DashboardDateFilterValue,
 } from './dashboard-date-filter'
+import { GrowerPerformanceTable } from './grower-performance-table'
 import { RecentRunsTable } from './recent-runs-table'
 import { StrainPerformanceTable } from './strain-performance-table'
 import { SummaryMetrics } from './summary-metrics'
@@ -17,6 +18,7 @@ type DashboardAnalyticsRun = {
   output_type: string
   biomass_input_g: number | null
   output_weight_g: number | null
+  labor_cost: number | null
   material_cost: number | null
   utility_cost: number | null
   other_cost: number | null
@@ -129,6 +131,7 @@ export function DashboardAnalytics({ runs }: DashboardAnalyticsProps) {
         totalOutputWeight={totalOutputWeight}
       />
       <StrainPerformanceTable runs={filteredRuns} emptyMessage={emptyMessage} />
+      <GrowerPerformanceTable runs={filteredRuns} emptyMessage={emptyMessage} />
       <RecentRunsTable runs={filteredRuns} emptyMessage={emptyMessage} />
     </>
   )
