@@ -1,0 +1,78 @@
+import { getCostPerGram, getYieldPercent, type PerformanceMetricRun } from './analytics-metrics'
+
+export type RunTableRun = PerformanceMetricRun & {
+  id: string
+  run_date: string
+  created_at?: string
+}
+
+const currencyFormatter = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+})
+
+export const numericCellClass = 'px-4 py-3 text-right tabular-nums'
+export const textCellClass = 'px-4 py-3'
+
+function coerceNumber(value: number | null | undefined) {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null
+}
+
+export function formatGrams(value: number | null | undefined) {
+  const normalizedValue = coerceNumber(value)
+  if (normalizedValue === null) {
+    return '-'
+  }
+
+  return `${normalizedValue.toFixed(1)} g`
+}
+
+export function formatPercent(value: number | null | undefined) {
+  const normalizedValue = coerceNumber(value)
+  if (normalizedValue === null) {
+    return '-'
+  }
+
+  return `${normalizedValue.toFixed(1)}%`
+}
+
+export function formatCurrency(value: number | null | undefined) {
+  const normalizedValue = coerceNumber(value)
+  if (normalizedValue === null) {
+    return '-'
+  }
+
+  return currencyFormatter.format(normalizedValue)
+}
+
+export function formatDate(value: string) {
+  const normalizedValue = value.trim()
+  if (/^\d{4}-\d{2}-\d{2}$/.test(normalizedValue)) {
+    return normalizedValue
+  }
+
+  const parsedDate = new Date(normalizedValue)
+  if (Number.isNaN(parsedDate.getTime())) {
+    return value
+  }
+
+  const year = parsedDate.getFullYear()
+  const month = String(parsedDate.getMonth() + 1).padStart(2, '0')
+  const day = String(parsedDate.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+export function formatText(value: string | null | undefined) {
+  const normalizedValue = value?.trim()
+  return normalizedValue ? normalizedValue : 'Unspecified'
+}
+
+export function getFormattedYieldPercent(run: RunTableRun) {
+  return formatPercent(getYieldPercent(run))
+}
+
+export function getFormattedCostPerGram(run: RunTableRun) {
+  return formatCurrency(getCostPerGram(run))
+}
