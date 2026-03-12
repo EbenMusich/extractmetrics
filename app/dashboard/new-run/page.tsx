@@ -1,5 +1,7 @@
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import { NewRunForm } from '@/components/new-run-form'
 
 export default async function NewRunPage() {
   const supabase = await createClient()
@@ -13,18 +15,25 @@ export default async function NewRunPage() {
 
   return (
     <section className="space-y-6">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-semibold text-gray-900">New run</h1>
-        <p className="text-sm text-gray-600">
-          This page is ready for the next step of the dashboard build.
-        </p>
+      <div className="space-y-3">
+        <Link href="/dashboard" className="inline-flex text-sm text-gray-600 transition hover:text-gray-900">
+          Back to dashboard
+        </Link>
+
+        <div className="space-y-2">
+          <h1 className="text-3xl font-semibold text-gray-900">New run</h1>
+          <p className="text-sm text-gray-600">
+            Record a new extraction run, then return to your dashboard analytics automatically.
+          </p>
+        </div>
       </div>
 
-      <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-        <p className="text-sm text-gray-700">
-          New Run page is ready for the next step. The sidebar link now has a dedicated
-          placeholder route instead of redirecting away.
-        </p>
+      <div className="max-w-4xl">
+        <NewRunForm
+          title="Run entry"
+          description="Enter the basics for this extraction run."
+          successRedirectTo="/dashboard"
+        />
       </div>
     </section>
   )

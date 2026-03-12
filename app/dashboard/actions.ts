@@ -1,6 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 
 export type CreateRunFormState = {
@@ -45,11 +46,17 @@ function readNumber(formData: FormData, field: string) {
   return Number.isFinite(value) ? value : Number.NaN
 }
 
+function readRedirectTarget(formData: FormData) {
+  const redirectTo = readText(formData, 'success_redirect_to')
+  return redirectTo || null
+}
+
 export async function createRunAction(
   previousState: CreateRunFormState = defaultState,
   formData: FormData
 ): Promise<CreateRunFormState> {
   const supabase = await createClient()
+  const successRedirectTo = readRedirectTarget(formData)
   const {
     data: { user },
     error: authError,
@@ -154,6 +161,11 @@ export async function createRunAction(
     }
 
     revalidatePath('/dashboard')
+    revalidatePath('/dashboard/runs')
+
+    if (successRedirectTo) {
+      redirect(successRedirectTo)
+    }
 
     return {
       error: null,

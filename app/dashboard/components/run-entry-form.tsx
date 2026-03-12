@@ -1,7 +1,6 @@
 'use client'
 
-import { useActionState, useEffect, useState, type FormEvent } from 'react'
-import { useRouter } from 'next/navigation'
+import { useActionState, useState, type FormEvent } from 'react'
 import { useFormStatus } from 'react-dom'
 import { createRunAction, type CreateRunFormState } from '@/app/dashboard/actions'
 
@@ -128,7 +127,14 @@ function FieldError({ message }: { message?: string }) {
   return <p className="text-sm text-red-600">{message}</p>
 }
 
-function SubmitButton() {
+type RunEntryFormProps = {
+  title?: string
+  description?: string
+  submitLabel?: string
+  successRedirectTo?: string
+}
+
+function SubmitButton({ label }: { label: string }) {
   const { pending } = useFormStatus()
 
   return (
@@ -137,41 +143,33 @@ function SubmitButton() {
       disabled={pending}
       className="rounded bg-black px-4 py-2 text-white disabled:cursor-not-allowed disabled:opacity-60"
     >
-      {pending ? 'Saving...' : 'Save run'}
+      {pending ? 'Saving...' : label}
     </button>
   )
 }
 
-export function RunEntryForm() {
-  const router = useRouter()
+export function RunEntryForm({
+  title = 'New run',
+  description = 'Enter the basics for this extraction run.',
+  submitLabel = 'Save run',
+  successRedirectTo,
+}: RunEntryFormProps = {}) {
   const [state, formAction] = useActionState(createRunAction, initialState)
   const [values, setValues] = useState<RunFormValues>(() => createInitialValues())
-  const [fieldErrors, setFieldErrors] = useState<RunFormFieldErrors>({})
+  const [clientFieldErrors, setClientFieldErrors] = useState<RunFormFieldErrors>({})
   const [showValidationSummary, setShowValidationSummary] = useState(false)
   const outputWeightWarning = getOutputWeightWarning(values)
-
-  useEffect(() => {
-    if (state.success) {
-      setValues(createInitialValues())
-      setFieldErrors({})
-      setShowValidationSummary(false)
-      router.refresh()
-    }
-  }, [router, state.resetKey, state.success])
-
-  useEffect(() => {
-    if (Object.keys(state.fieldErrors).length > 0) {
-      setFieldErrors(state.fieldErrors)
-      setShowValidationSummary(true)
-    }
-  }, [state.fieldErrors])
+  const hasServerFieldErrors = Object.keys(state.fieldErrors).length > 0
+  const fieldErrors = showValidationSummary ? clientFieldErrors : state.fieldErrors
+  const shouldShowValidationSummary = showValidationSummary || hasServerFieldErrors
 
   function handleChange(field: keyof RunFormValues, value: string) {
     setValues((currentValues) => {
       const nextValues = { ...currentValues, [field]: value }
 
-      if (showValidationSummary || Object.keys(fieldErrors).length > 0) {
-        setFieldErrors(validateForm(nextValues))
+      if (shouldShowValidationSummary) {
+        setShowValidationSummary(true)
+        setClientFieldErrors(validateForm(nextValues))
       }
 
       return nextValues
@@ -183,12 +181,12 @@ export function RunEntryForm() {
 
     if (Object.keys(nextErrors).length > 0) {
       event.preventDefault()
-      setFieldErrors(nextErrors)
+      setClientFieldErrors(nextErrors)
       setShowValidationSummary(true)
       return
     }
 
-    setFieldErrors({})
+    setClientFieldErrors({})
     setShowValidationSummary(false)
   }
 
@@ -200,9 +198,11 @@ export function RunEntryForm() {
       onSubmit={handleSubmit}
       className="flex w-full flex-col gap-4 rounded-xl border bg-white p-6"
     >
+      {successRedirectTo ? <input type="hidden" name="success_redirect_to" value={successRedirectTo} /> : null}
+
       <div className="space-y-1">
-        <h2 className="text-xl font-semibold">New run</h2>
-        <p className="text-sm text-gray-600">Enter the basics for this extraction run.</p>
+        <h2 className="text-xl font-semibold">{title}</h2>
+        <p className="text-sm text-gray-600">{description}</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -355,7 +355,7 @@ export function RunEntryForm() {
         />
       </label>
 
-      {showValidationSummary && validationMessages.length > 0 ? (
+      {shouldShowValidationSummary && validationMessages.length > 0 ? (
         <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
           <p className="font-medium">Please correct the highlighted fields.</p>
           <ul className="mt-2 list-disc pl-5">
@@ -373,7 +373,7 @@ export function RunEntryForm() {
           ) : null}
           {state.success ? <p className="text-green-700">{state.success}</p> : null}
         </div>
-        <SubmitButton />
+        <SubmitButton label={submitLabel} />
       </div>
     </form>
   )

@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { DashboardAnalytics } from './components/dashboard-analytics'
-import { RunEntryForm } from './components/run-entry-form'
 
 type DashboardRun = {
   id: string
@@ -40,12 +40,21 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      <section className="space-y-2">
-        <h1 className="text-3xl font-semibold">ExtractMetrics</h1>
-        <p className="text-sm text-gray-600">
-          Welcome back{user.email ? `, ${user.email}` : ''}. Track runs, review your metrics, and
-          keep the latest activity in one place.
-        </p>
+      <section className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <div className="space-y-2">
+          <h1 className="text-3xl font-semibold">ExtractMetrics</h1>
+          <p className="text-sm text-gray-600">
+            Welcome back{user.email ? `, ${user.email}` : ''}. Track runs, review your metrics, and
+            keep the latest activity in one place.
+          </p>
+        </div>
+
+        <Link
+          href="/dashboard/new-run"
+          className="inline-flex items-center justify-center rounded-lg bg-black px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-gray-800"
+        >
+          + New Run
+        </Link>
       </section>
 
       {error ? (
@@ -54,14 +63,8 @@ export default async function DashboardPage() {
         </div>
       ) : null}
 
-      <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_360px]">
-        <div className="space-y-8">
-          <DashboardAnalytics runs={runs} />
-        </div>
-
-        <div>
-          <RunEntryForm />
-        </div>
+      <div className="space-y-8">
+        <DashboardAnalytics runs={runs} />
       </div>
     </div>
   )
