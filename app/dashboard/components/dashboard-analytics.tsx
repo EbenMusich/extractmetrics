@@ -6,6 +6,7 @@ import {
   type DashboardDateFilterValue,
 } from './dashboard-date-filter'
 import { GrowerPerformanceTable } from './grower-performance-table'
+import { OutputTypePerformanceTable } from './output-type-performance-table'
 import { RecentRunsTable } from './recent-runs-table'
 import { StrainPerformanceTable } from './strain-performance-table'
 import { SummaryMetrics } from './summary-metrics'
@@ -132,6 +133,7 @@ export function DashboardAnalytics({ runs }: DashboardAnalyticsProps) {
       />
       <StrainPerformanceTable runs={filteredRuns} emptyMessage={emptyMessage} />
       <GrowerPerformanceTable runs={filteredRuns} emptyMessage={emptyMessage} />
+      <OutputTypePerformanceTable runs={filteredRuns} emptyMessage={emptyMessage} />
       <RecentRunsTable runs={filteredRuns} emptyMessage={emptyMessage} />
     </>
   )
