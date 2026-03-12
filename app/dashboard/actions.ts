@@ -71,72 +71,71 @@ export async function createRunAction(
     }
   }
 
+  const runDate = readText(formData, 'run_date')
+  const strainName = readText(formData, 'strain_name')
+  const growerName = readText(formData, 'grower_name')
+  const outputType = readText(formData, 'output_type')
+  const notes = readText(formData, 'notes')
+  const fieldErrors: CreateRunFormState['fieldErrors'] = {}
+  const biomassInputG = readNumber(formData, 'biomass_input_g')
+  const outputWeightG = readNumber(formData, 'output_weight_g')
+  const materialCost = readNumber(formData, 'material_cost')
+  const utilityCost = readNumber(formData, 'utility_cost')
+  const otherCost = readNumber(formData, 'other_cost')
+
+  if (!runDate) {
+    fieldErrors.run_date = 'Run date is required.'
+  }
+  if (!outputType) {
+    fieldErrors.output_type = 'Output type is required.'
+  }
+  if (!strainName) {
+    fieldErrors.strain_name = 'Strain name is required.'
+  }
+  if (!growerName) {
+    fieldErrors.grower_name = 'Grower name is required.'
+  }
+
+  if (biomassInputG === null) {
+    fieldErrors.biomass_input_g = 'Biomass input is required.'
+  } else if (!Number.isFinite(biomassInputG) || biomassInputG <= 0) {
+    fieldErrors.biomass_input_g = 'Biomass input must be greater than 0.'
+  }
+
+  if (outputWeightG === null) {
+    fieldErrors.output_weight_g = 'Output weight is required.'
+  } else if (!Number.isFinite(outputWeightG) || outputWeightG <= 0) {
+    fieldErrors.output_weight_g = 'Output weight must be greater than 0.'
+  }
+
+  if (materialCost === null) {
+    fieldErrors.material_cost = 'Material cost is required.'
+  } else if (!Number.isFinite(materialCost) || materialCost < 0) {
+    fieldErrors.material_cost = 'Material cost must be 0 or greater.'
+  }
+
+  if (utilityCost === null) {
+    fieldErrors.utility_cost = 'Utility cost is required.'
+  } else if (!Number.isFinite(utilityCost) || utilityCost < 0) {
+    fieldErrors.utility_cost = 'Utility cost must be 0 or greater.'
+  }
+
+  if (otherCost === null) {
+    fieldErrors.other_cost = 'Other cost is required.'
+  } else if (!Number.isFinite(otherCost) || otherCost < 0) {
+    fieldErrors.other_cost = 'Other cost must be 0 or greater.'
+  }
+
+  if (Object.keys(fieldErrors).length > 0) {
+    return {
+      error: 'Please correct the highlighted fields.',
+      success: null,
+      resetKey: previousState.resetKey,
+      fieldErrors,
+    }
+  }
+
   try {
-    const runDate = readText(formData, 'run_date')
-    const strainName = readText(formData, 'strain_name')
-    const growerName = readText(formData, 'grower_name')
-    const outputType = readText(formData, 'output_type')
-    const notes = readText(formData, 'notes')
-    const fieldErrors: CreateRunFormState['fieldErrors'] = {}
-
-    if (!runDate) {
-      fieldErrors.run_date = 'Run date is required.'
-    }
-    if (!outputType) {
-      fieldErrors.output_type = 'Output type is required.'
-    }
-    if (!strainName) {
-      fieldErrors.strain_name = 'Strain name is required.'
-    }
-    if (!growerName) {
-      fieldErrors.grower_name = 'Grower name is required.'
-    }
-
-    const biomassInputG = readNumber(formData, 'biomass_input_g')
-    const outputWeightG = readNumber(formData, 'output_weight_g')
-    const materialCost = readNumber(formData, 'material_cost')
-    const utilityCost = readNumber(formData, 'utility_cost')
-    const otherCost = readNumber(formData, 'other_cost')
-
-    if (biomassInputG === null) {
-      fieldErrors.biomass_input_g = 'Biomass input is required.'
-    } else if (!Number.isFinite(biomassInputG) || biomassInputG <= 0) {
-      fieldErrors.biomass_input_g = 'Biomass input must be greater than 0.'
-    }
-
-    if (outputWeightG === null) {
-      fieldErrors.output_weight_g = 'Output weight is required.'
-    } else if (!Number.isFinite(outputWeightG) || outputWeightG <= 0) {
-      fieldErrors.output_weight_g = 'Output weight must be greater than 0.'
-    }
-
-    if (materialCost === null) {
-      fieldErrors.material_cost = 'Material cost is required.'
-    } else if (!Number.isFinite(materialCost) || materialCost < 0) {
-      fieldErrors.material_cost = 'Material cost must be 0 or greater.'
-    }
-
-    if (utilityCost === null) {
-      fieldErrors.utility_cost = 'Utility cost is required.'
-    } else if (!Number.isFinite(utilityCost) || utilityCost < 0) {
-      fieldErrors.utility_cost = 'Utility cost must be 0 or greater.'
-    }
-
-    if (otherCost === null) {
-      fieldErrors.other_cost = 'Other cost is required.'
-    } else if (!Number.isFinite(otherCost) || otherCost < 0) {
-      fieldErrors.other_cost = 'Other cost must be 0 or greater.'
-    }
-
-    if (Object.keys(fieldErrors).length > 0) {
-      return {
-        error: 'Please correct the highlighted fields.',
-        success: null,
-        resetKey: previousState.resetKey,
-        fieldErrors,
-      }
-    }
-
     const { error } = await supabase.from('runs').insert({
       user_id: user.id,
       run_date: runDate,
@@ -162,17 +161,6 @@ export async function createRunAction(
 
     revalidatePath('/dashboard')
     revalidatePath('/dashboard/runs')
-
-    if (successRedirectTo) {
-      redirect(successRedirectTo)
-    }
-
-    return {
-      error: null,
-      success: 'Run saved successfully.',
-      resetKey: previousState.resetKey + 1,
-      fieldErrors: {},
-    }
   } catch (error) {
     return {
       error: error instanceof Error ? error.message : 'Unable to save run.',
@@ -180,5 +168,16 @@ export async function createRunAction(
       resetKey: previousState.resetKey,
       fieldErrors: {},
     }
+  }
+
+  if (successRedirectTo) {
+    redirect(successRedirectTo)
+  }
+
+  return {
+    error: null,
+    success: 'Run saved successfully.',
+    resetKey: previousState.resetKey + 1,
+    fieldErrors: {},
   }
 }
