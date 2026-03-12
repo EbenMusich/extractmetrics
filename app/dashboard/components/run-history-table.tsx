@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useMemo, useRef, useState } from 'react'
 import { useFormStatus } from 'react-dom'
 import { deleteRunAction } from '@/app/dashboard/actions'
+import { filterRunsBySearchTerm } from './run-history-filter'
 import {
   formatDate,
   formatGrams,
@@ -20,10 +21,6 @@ type RunHistoryTableProps = {
 }
 
 const RUNS_PER_PAGE = 25
-
-function normalizeSearchValue(value: string | null | undefined) {
-  return value?.trim().toLowerCase() ?? ''
-}
 
 function DeleteRunButton({ onClick }: { onClick: () => void }) {
   const { pending } = useFormStatus()
@@ -63,19 +60,18 @@ export function RunHistoryTable({ runs }: RunHistoryTableProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
 
-  const filteredRuns = useMemo(() => {
-    const normalizedSearchTerm = searchTerm.trim().toLowerCase()
+  const filteredRuns = useMemo(() => filterRunsBySearchTerm(runs, searchTerm), [runs, searchTerm])
+  const exportHref = useMemo(() => {
+    const params = new URLSearchParams()
+    const normalizedSearchTerm = searchTerm.trim()
 
-    if (!normalizedSearchTerm) {
-      return runs
+    if (normalizedSearchTerm) {
+      params.set('search', normalizedSearchTerm)
     }
 
-    return runs.filter((run) =>
-      [run.strain_name, run.grower_name, run.output_type].some((value) =>
-        normalizeSearchValue(value).includes(normalizedSearchTerm)
-      )
-    )
-  }, [runs, searchTerm])
+    const queryString = params.toString()
+    return queryString ? `/dashboard/runs/export?${queryString}` : '/dashboard/runs/export'
+  }, [searchTerm])
 
   const totalPages = Math.max(1, Math.ceil(filteredRuns.length / RUNS_PER_PAGE))
   const visiblePage = Math.min(currentPage, totalPages)
@@ -93,19 +89,29 @@ export function RunHistoryTable({ runs }: RunHistoryTableProps) {
           </p>
         </div>
 
-        <label className="flex w-full max-w-sm flex-col gap-1 text-sm text-gray-600">
-          <span>Search runs</span>
-          <input
-            type="search"
-            value={searchTerm}
-            onChange={(event) => {
-              setSearchTerm(event.target.value)
-              setCurrentPage(1)
-            }}
-            placeholder="Search strain, grower, or output type"
-            className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none transition focus:border-gray-400"
-          />
-        </label>
+        <div className="flex w-full max-w-md flex-col gap-3 sm:items-end">
+          <label className="flex w-full flex-col gap-1 text-sm text-gray-600">
+            <span>Search runs</span>
+            <input
+              type="search"
+              value={searchTerm}
+              onChange={(event) => {
+                setSearchTerm(event.target.value)
+                setCurrentPage(1)
+              }}
+              placeholder="Search strain, grower, or output type"
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none transition focus:border-gray-400"
+            />
+          </label>
+
+          <a
+            href={filteredRuns.length > 0 ? exportHref : undefined}
+            className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-400 aria-disabled:pointer-events-none aria-disabled:opacity-50"
+            aria-disabled={filteredRuns.length === 0}
+          >
+            Export CSV
+          </a>
+        </div>
       </div>
 
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
