@@ -7,9 +7,11 @@ import {
 } from './dashboard-date-filter'
 import { GrowerPerformanceTable } from './grower-performance-table'
 import { OutputTypePerformanceTable } from './output-type-performance-table'
+import { PerformanceInsights } from './performance-insights'
 import { RecentRunsTable } from './recent-runs-table'
 import { StrainPerformanceTable } from './strain-performance-table'
 import { SummaryMetrics } from './summary-metrics'
+import { getCostPerGram, getYieldPercent } from './analytics-metrics'
 
 type DashboardAnalyticsRun = {
   id: string
@@ -63,25 +65,6 @@ function getCutoffDate(filter: DashboardDateFilterValue) {
   return cutoff
 }
 
-function calculateYieldPercent(run: DashboardAnalyticsRun) {
-  if (!run.biomass_input_g || !run.output_weight_g) {
-    return null
-  }
-
-  return (run.output_weight_g / run.biomass_input_g) * 100
-}
-
-function calculateCostPerGram(run: DashboardAnalyticsRun) {
-  if (!run.output_weight_g) {
-    return null
-  }
-
-  const totalCost =
-    (run.material_cost ?? 0) + (run.utility_cost ?? 0) + (run.other_cost ?? 0)
-
-  return totalCost / run.output_weight_g
-}
-
 export function DashboardAnalytics({ runs }: DashboardAnalyticsProps) {
   const [dateFilter, setDateFilter] = useState<DashboardDateFilterValue>('all')
 
@@ -98,11 +81,9 @@ export function DashboardAnalytics({ runs }: DashboardAnalyticsProps) {
     })
   }, [dateFilter, runs])
 
-  const yields = filteredRuns
-    .map(calculateYieldPercent)
-    .filter((value): value is number => value !== null)
+  const yields = filteredRuns.map(getYieldPercent).filter((value): value is number => value !== null)
   const costsPerGram = filteredRuns
-    .map(calculateCostPerGram)
+    .map(getCostPerGram)
     .filter((value): value is number => value !== null)
 
   const totalRuns = filteredRuns.length
@@ -131,6 +112,7 @@ export function DashboardAnalytics({ runs }: DashboardAnalyticsProps) {
         averageCostPerGram={averageCostPerGram}
         totalOutputWeight={totalOutputWeight}
       />
+      <PerformanceInsights filteredRuns={filteredRuns} />
       <StrainPerformanceTable runs={filteredRuns} emptyMessage={emptyMessage} />
       <GrowerPerformanceTable runs={filteredRuns} emptyMessage={emptyMessage} />
       <OutputTypePerformanceTable runs={filteredRuns} emptyMessage={emptyMessage} />
