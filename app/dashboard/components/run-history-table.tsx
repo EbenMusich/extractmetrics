@@ -1,6 +1,9 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import Link from 'next/link'
+import { useMemo, useState, type FormEvent } from 'react'
+import { useFormStatus } from 'react-dom'
+import { deleteRunAction } from '@/app/dashboard/actions'
 import {
   formatDate,
   formatGrams,
@@ -22,9 +25,29 @@ function normalizeSearchValue(value: string | null | undefined) {
   return value?.trim().toLowerCase() ?? ''
 }
 
+function DeleteRunButton() {
+  const { pending } = useFormStatus()
+
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="rounded-md border border-red-200 px-3 py-1.5 text-xs font-medium text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+    >
+      {pending ? 'Deleting...' : 'Delete'}
+    </button>
+  )
+}
+
 export function RunHistoryTable({ runs }: RunHistoryTableProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
+
+  function handleDeleteSubmit(event: FormEvent<HTMLFormElement>) {
+    if (!window.confirm('Delete this run? This cannot be undone.')) {
+      event.preventDefault()
+    }
+  }
 
   const filteredRuns = useMemo(() => {
     const normalizedSearchTerm = searchTerm.trim().toLowerCase()
@@ -113,20 +136,16 @@ export function RunHistoryTable({ runs }: RunHistoryTableProps) {
                     <td className={numericCellClass}>{getFormattedCostPerGram(run)}</td>
                     <td className="px-4 py-3">
                       <div className="flex justify-end gap-2">
-                        <button
-                          type="button"
-                          disabled
-                          className="rounded-md border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-400"
+                        <Link
+                          href={`/dashboard/runs/${run.id}/edit`}
+                          className="rounded-md border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50"
                         >
                           Edit
-                        </button>
-                        <button
-                          type="button"
-                          disabled
-                          className="rounded-md border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-400"
-                        >
-                          Delete
-                        </button>
+                        </Link>
+                        <form action={deleteRunAction} onSubmit={handleDeleteSubmit}>
+                          <input type="hidden" name="run_id" value={run.id} />
+                          <DeleteRunButton />
+                        </form>
                       </div>
                     </td>
                   </tr>

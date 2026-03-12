@@ -2,7 +2,11 @@
 
 import { useActionState, useState, type FormEvent } from 'react'
 import { useFormStatus } from 'react-dom'
-import { createRunAction, type CreateRunFormState } from '@/app/dashboard/actions'
+import {
+  createRunAction,
+  updateRunAction,
+  type CreateRunFormState,
+} from '@/app/dashboard/actions'
 
 const initialState: CreateRunFormState = {
   error: null,
@@ -11,7 +15,7 @@ const initialState: CreateRunFormState = {
   fieldErrors: {},
 }
 
-type RunFormValues = {
+export type RunFormValues = {
   run_date: string
   output_type: string
   strain_name: string
@@ -44,6 +48,13 @@ function createInitialValues(): RunFormValues {
     utility_cost: '',
     other_cost: '',
     notes: '',
+  }
+}
+
+function mergeInitialValues(initialValues?: Partial<RunFormValues>): RunFormValues {
+  return {
+    ...createInitialValues(),
+    ...initialValues,
   }
 }
 
@@ -128,10 +139,13 @@ function FieldError({ message }: { message?: string }) {
 }
 
 type RunEntryFormProps = {
+  mode?: 'create' | 'edit'
   title?: string
   description?: string
   submitLabel?: string
   successRedirectTo?: string
+  initialValues?: Partial<RunFormValues>
+  runId?: string
 }
 
 function SubmitButton({ label }: { label: string }) {
@@ -149,13 +163,17 @@ function SubmitButton({ label }: { label: string }) {
 }
 
 export function RunEntryForm({
+  mode = 'create',
   title = 'New run',
   description = 'Enter the basics for this extraction run.',
   submitLabel = 'Save run',
   successRedirectTo,
+  initialValues,
+  runId,
 }: RunEntryFormProps = {}) {
-  const [state, formAction] = useActionState(createRunAction, initialState)
-  const [values, setValues] = useState<RunFormValues>(() => createInitialValues())
+  const action = mode === 'edit' ? updateRunAction : createRunAction
+  const [state, formAction] = useActionState(action, initialState)
+  const [values, setValues] = useState<RunFormValues>(() => mergeInitialValues(initialValues))
   const [clientFieldErrors, setClientFieldErrors] = useState<RunFormFieldErrors>({})
   const [showValidationSummary, setShowValidationSummary] = useState(false)
   const outputWeightWarning = getOutputWeightWarning(values)
@@ -198,6 +216,7 @@ export function RunEntryForm({
       onSubmit={handleSubmit}
       className="flex w-full flex-col gap-4 rounded-xl border bg-white p-6"
     >
+      {mode === 'edit' && runId ? <input type="hidden" name="run_id" value={runId} /> : null}
       {successRedirectTo ? <input type="hidden" name="success_redirect_to" value={successRedirectTo} /> : null}
 
       <div className="space-y-1">
