@@ -6,6 +6,7 @@ type RecentRun = {
   output_type: string
   biomass_input_g: number | null
   output_weight_g: number | null
+  labor_cost?: number | null
   material_cost: number | null
   utility_cost: number | null
   other_cost: number | null
@@ -24,52 +25,109 @@ const numberFormatter = new Intl.NumberFormat('en-US', {
 const currencyFormatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
   currency: 'USD',
+  minimumFractionDigits: 2,
   maximumFractionDigits: 2,
 })
 
-function formatNumber(value: number | null, suffix = '') {
-  if (value === null) {
-    return '-'
-  }
+const MAX_VISIBLE_RUNS = 15
+const numericCellClass = 'px-4 py-3 text-right tabular-nums'
+const textCellClass = 'px-4 py-3'
 
-  return `${numberFormatter.format(value)}${suffix}`
+function coerceNumber(value: number | null | undefined) {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null
 }
 
-function formatCurrency(value: number | null) {
-  if (value === null) {
+function formatGrams(value: number | null | undefined) {
+  const normalizedValue = coerceNumber(value)
+  if (normalizedValue === null) {
     return '-'
   }
 
-  return currencyFormatter.format(value)
+  return `${normalizedValue.toFixed(1)} g`
+}
+
+function formatPercent(value: number | null | undefined) {
+  const normalizedValue = coerceNumber(value)
+  if (normalizedValue === null) {
+    return '-'
+  }
+
+  return `${normalizedValue.toFixed(1)}%`
+}
+
+function formatCurrency(value: number | null | undefined) {
+  const normalizedValue = coerceNumber(value)
+  if (normalizedValue === null) {
+    return '-'
+  }
+
+  return currencyFormatter.format(normalizedValue)
 }
 
 function formatDate(value: string) {
-  return new Date(`${value}T00:00:00`).toLocaleDateString()
+  const normalizedValue = value.trim()
+  if (/^\d{4}-\d{2}-\d{2}$/.test(normalizedValue)) {
+    return normalizedValue
+  }
+
+  const parsedDate = new Date(normalizedValue)
+  if (Number.isNaN(parsedDate.getTime())) {
+    return value
+  }
+
+  const year = parsedDate.getFullYear()
+  const month = String(parsedDate.getMonth() + 1).padStart(2, '0')
+  const day = String(parsedDate.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 }
 
 function calculateYieldPercent(run: RecentRun) {
-  if (!run.biomass_input_g || !run.output_weight_g) {
+  const biomassInputG = coerceNumber(run.biomass_input_g)
+  const outputWeightG = coerceNumber(run.output_weight_g)
+
+  if (biomassInputG === null || biomassInputG <= 0 || outputWeightG === null) {
     return null
   }
 
-  return (run.output_weight_g / run.biomass_input_g) * 100
+  return (outputWeightG / biomassInputG) * 100
 }
 
 function calculateCostPerGram(run: RecentRun) {
-  if (!run.output_weight_g) {
+  const outputWeightG = coerceNumber(run.output_weight_g)
+
+  if (outputWeightG === null || outputWeightG <= 0) {
     return null
   }
 
   const totalCost =
-    (run.material_cost ?? 0) + (run.utility_cost ?? 0) + (run.other_cost ?? 0)
+    (coerceNumber(run.labor_cost) ?? 0) +
+    (coerceNumber(run.material_cost) ?? 0) +
+    (coerceNumber(run.utility_cost) ?? 0) +
+    (coerceNumber(run.other_cost) ?? 0)
 
-  return totalCost / run.output_weight_g
+  return totalCost / outputWeightG
+}
+
+function RecentRunsRow({ run }: { run: RecentRun }) {
+  return (
+    <tr className="border-b border-gray-100 last:border-b-0 hover:bg-gray-50/80">
+      <td className={textCellClass}>{formatDate(run.run_date)}</td>
+      <td className={textCellClass}>{run.strain_name}</td>
+      <td className={textCellClass}>{run.output_type}</td>
+      <td className={numericCellClass}>{formatGrams(run.biomass_input_g)}</td>
+      <td className={numericCellClass}>{formatGrams(run.output_weight_g)}</td>
+      <td className={numericCellClass}>{formatPercent(calculateYieldPercent(run))}</td>
+      <td className={numericCellClass}>{formatCurrency(calculateCostPerGram(run))}</td>
+    </tr>
+  )
 }
 
 export function RecentRunsTable({
   runs,
-  emptyMessage = 'No runs yet. Add your first run to start tracking metrics.',
+  emptyMessage = 'No runs recorded yet.',
 }: RecentRunsTableProps) {
+  const visibleRuns = runs.slice(0, MAX_VISIBLE_RUNS)
+
   return (
     <section className="space-y-3">
       <div>
@@ -77,41 +135,33 @@ export function RecentRunsTable({
         <p className="text-sm text-gray-600">Your latest saved extraction runs.</p>
       </div>
 
-      <div className="overflow-hidden rounded-xl border bg-white">
-        {runs.length === 0 ? (
-          <div className="p-6 text-sm text-gray-600">
-            {emptyMessage}
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y">
-              <thead className="bg-gray-50 text-left text-sm text-gray-600">
+      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-sm">
+            <thead className="bg-gray-50 text-left text-xs font-semibold uppercase tracking-wide text-gray-700">
+              <tr>
+                <th className={textCellClass}>Run Date</th>
+                <th className={textCellClass}>Strain</th>
+                <th className={textCellClass}>Output Type</th>
+                <th className={numericCellClass}>Biomass In</th>
+                <th className={numericCellClass}>Output</th>
+                <th className={numericCellClass}>Yield %</th>
+                <th className={numericCellClass}>Cost / g</th>
+              </tr>
+            </thead>
+            <tbody className="text-gray-700">
+              {visibleRuns.length === 0 ? (
                 <tr>
-                  <th className="px-4 py-3 font-medium">Date</th>
-                  <th className="px-4 py-3 font-medium">Strain</th>
-                  <th className="px-4 py-3 font-medium">Grower</th>
-                  <th className="px-4 py-3 font-medium">Output</th>
-                  <th className="px-4 py-3 font-medium">Yield</th>
-                  <th className="px-4 py-3 font-medium">Cost / g</th>
-                  <th className="px-4 py-3 font-medium">Type</th>
+                  <td className="px-4 py-6 text-center text-sm text-gray-500" colSpan={7}>
+                    {emptyMessage}
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="divide-y text-sm">
-                {runs.map((run) => (
-                  <tr key={run.id}>
-                    <td className="px-4 py-3">{formatDate(run.run_date)}</td>
-                    <td className="px-4 py-3">{run.strain_name}</td>
-                    <td className="px-4 py-3">{run.grower_name}</td>
-                    <td className="px-4 py-3">{formatNumber(run.output_weight_g, ' g')}</td>
-                    <td className="px-4 py-3">{formatNumber(calculateYieldPercent(run), '%')}</td>
-                    <td className="px-4 py-3">{formatCurrency(calculateCostPerGram(run))}</td>
-                    <td className="px-4 py-3">{run.output_type}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+              ) : (
+                visibleRuns.map((run) => <RecentRunsRow key={run.id} run={run} />)
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </section>
   )

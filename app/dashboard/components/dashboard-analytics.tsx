@@ -79,20 +79,6 @@ function calculateCostPerGram(run: DashboardAnalyticsRun) {
   return totalCost / run.output_weight_g
 }
 
-function compareRunsByDate(left: DashboardAnalyticsRun, right: DashboardAnalyticsRun) {
-  const leftRunDate = parseRunDate(left.run_date)
-  const rightRunDate = parseRunDate(right.run_date)
-
-  if (leftRunDate && rightRunDate) {
-    const runDateDifference = rightRunDate.getTime() - leftRunDate.getTime()
-    if (runDateDifference !== 0) {
-      return runDateDifference
-    }
-  }
-
-  return new Date(right.created_at).getTime() - new Date(left.created_at).getTime()
-}
-
 export function DashboardAnalytics({ runs }: DashboardAnalyticsProps) {
   const [dateFilter, setDateFilter] = useState<DashboardDateFilterValue>('all')
 
@@ -108,10 +94,6 @@ export function DashboardAnalytics({ runs }: DashboardAnalyticsProps) {
       return runDate ? runDate >= cutoffDate : true
     })
   }, [dateFilter, runs])
-
-  const recentRuns = useMemo(() => {
-    return [...filteredRuns].sort(compareRunsByDate).slice(0, 10)
-  }, [filteredRuns])
 
   const yields = filteredRuns
     .map(calculateYieldPercent)
@@ -147,7 +129,7 @@ export function DashboardAnalytics({ runs }: DashboardAnalyticsProps) {
         totalOutputWeight={totalOutputWeight}
       />
       <StrainPerformanceTable runs={filteredRuns} emptyMessage={emptyMessage} />
-      <RecentRunsTable runs={recentRuns} emptyMessage={emptyMessage} />
+      <RecentRunsTable runs={filteredRuns} emptyMessage={emptyMessage} />
     </>
   )
 }
