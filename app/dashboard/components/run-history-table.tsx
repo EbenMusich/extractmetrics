@@ -6,6 +6,17 @@ import { useFormStatus } from 'react-dom'
 import { deleteRunAction } from '@/app/dashboard/actions'
 import { filterRunsBySearchTerm } from './run-history-filter'
 import {
+  EmptyState,
+  SectionHeader,
+  destructiveButtonClass,
+  inputClass,
+  secondaryButtonClass,
+  tableClass,
+  tableHeadClass,
+  tableRowClass,
+  tableWrapperClass,
+} from './dashboard-ui'
+import {
   formatDate,
   formatGrams,
   formatText,
@@ -30,7 +41,7 @@ function DeleteRunButton({ onClick }: { onClick: () => void }) {
       type="button"
       onClick={onClick}
       disabled={pending}
-      className="rounded-md border border-red-200 px-3 py-1.5 text-xs font-medium text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+      className={`${destructiveButtonClass} px-3 py-1.5 text-xs`}
     >
       {pending ? 'Deleting...' : 'Delete'}
     </button>
@@ -80,18 +91,25 @@ export function RunHistoryTable({ runs }: RunHistoryTableProps) {
   const hasRuns = runs.length > 0
 
   return (
-    <section className="space-y-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h2 className="text-xl font-semibold">All runs</h2>
-          <p className="text-sm text-gray-600">
-            Browse your full extraction history with search and pagination.
-          </p>
-        </div>
+    <section className="space-y-5">
+      <SectionHeader
+        title="All runs"
+        description="Browse your full extraction history with search, pagination, and filtered export."
+        action={
+          <a
+            href={filteredRuns.length > 0 ? exportHref : undefined}
+            className={`${secondaryButtonClass} aria-disabled:pointer-events-none aria-disabled:opacity-50`}
+            aria-disabled={filteredRuns.length === 0}
+          >
+            Export CSV
+          </a>
+        }
+      />
 
-        <div className="flex w-full max-w-md flex-col gap-3 sm:items-end">
+      <div className={tableWrapperClass}>
+        <div className="border-b border-gray-200/80 px-4 py-4 sm:px-5">
           <label className="flex w-full flex-col gap-1 text-sm text-gray-600">
-            <span>Search runs</span>
+            <span className="font-medium text-gray-700">Search runs</span>
             <input
               type="search"
               value={searchTerm}
@@ -100,24 +118,14 @@ export function RunHistoryTable({ runs }: RunHistoryTableProps) {
                 setCurrentPage(1)
               }}
               placeholder="Search strain, grower, or output type"
-              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none transition focus:border-gray-400"
+              className={inputClass}
             />
           </label>
-
-          <a
-            href={filteredRuns.length > 0 ? exportHref : undefined}
-            className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-400 aria-disabled:pointer-events-none aria-disabled:opacity-50"
-            aria-disabled={filteredRuns.length === 0}
-          >
-            Export CSV
-          </a>
         </div>
-      </div>
 
-      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
         <div className="overflow-x-auto">
-          <table className="min-w-full text-sm">
-            <thead className="bg-gray-50 text-left text-xs font-semibold uppercase tracking-wide text-gray-700">
+          <table className={tableClass}>
+            <thead className={tableHeadClass}>
               <tr>
                 <th className={textCellClass}>Run Date</th>
                 <th className={textCellClass}>Strain</th>
@@ -127,25 +135,33 @@ export function RunHistoryTable({ runs }: RunHistoryTableProps) {
                 <th className={numericCellClass}>Output</th>
                 <th className={numericCellClass}>Yield %</th>
                 <th className={numericCellClass}>Cost / g</th>
-                <th className="px-4 py-3 text-right">Actions</th>
+                <th className="px-4 py-3.5 text-right sm:px-5">Actions</th>
               </tr>
             </thead>
             <tbody className="text-gray-700">
               {!hasRuns ? (
                 <tr>
-                  <td className="px-4 py-6 text-center text-sm text-gray-500" colSpan={9}>
-                    No runs recorded yet.
+                  <td className="px-4 py-6 sm:px-5" colSpan={9}>
+                    <EmptyState
+                      compact
+                      title="No runs recorded yet"
+                      description="Create your first run to start building a searchable history."
+                    />
                   </td>
                 </tr>
               ) : visibleRuns.length === 0 ? (
                 <tr>
-                  <td className="px-4 py-6 text-center text-sm text-gray-500" colSpan={9}>
-                    No runs match your search.
+                  <td className="px-4 py-6 sm:px-5" colSpan={9}>
+                    <EmptyState
+                      compact
+                      title="No matching runs"
+                      description="Try a different search term or clear the filter to see more results."
+                    />
                   </td>
                 </tr>
               ) : (
                 visibleRuns.map((run) => (
-                  <tr key={run.id} className="border-b border-gray-100 last:border-b-0 hover:bg-gray-50/80">
+                  <tr key={run.id} className={tableRowClass}>
                     <td className={textCellClass}>{formatDate(run.run_date)}</td>
                     <td className={textCellClass}>{formatText(run.strain_name)}</td>
                     <td className={textCellClass}>{formatText(run.grower_name)}</td>
@@ -154,11 +170,11 @@ export function RunHistoryTable({ runs }: RunHistoryTableProps) {
                     <td className={numericCellClass}>{formatGrams(run.output_weight_g)}</td>
                     <td className={numericCellClass}>{getFormattedYieldPercent(run)}</td>
                     <td className={numericCellClass}>{getFormattedCostPerGram(run)}</td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3.5 sm:px-5">
                       <div className="flex justify-end gap-2">
                         <Link
                           href={`/dashboard/runs/${run.id}/edit`}
-                          className="rounded-md border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50"
+                          className={`${secondaryButtonClass} px-3 py-1.5 text-xs`}
                         >
                           Edit
                         </Link>
@@ -174,7 +190,7 @@ export function RunHistoryTable({ runs }: RunHistoryTableProps) {
       </div>
 
       {hasRuns ? (
-        <div className="flex flex-col gap-3 text-sm text-gray-600 sm:flex-row sm:items-center sm:justify-between">
+        <div className={`${tableWrapperClass} flex flex-col gap-3 px-4 py-4 text-sm text-gray-600 sm:flex-row sm:items-center sm:justify-between sm:px-5`}>
           <p>
             Showing {filteredRuns.length === 0 ? 0 : startIndex + 1}-{Math.min(startIndex + RUNS_PER_PAGE, filteredRuns.length)} of{' '}
             {filteredRuns.length} runs
@@ -185,7 +201,7 @@ export function RunHistoryTable({ runs }: RunHistoryTableProps) {
               type="button"
               onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
               disabled={visiblePage === 1 || filteredRuns.length === 0}
-              className="rounded-lg border border-gray-300 bg-white px-3 py-2 font-medium text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:text-gray-400"
+              className={secondaryButtonClass}
             >
               Previous
             </button>
@@ -196,7 +212,7 @@ export function RunHistoryTable({ runs }: RunHistoryTableProps) {
               type="button"
               onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
               disabled={visiblePage >= totalPages || filteredRuns.length === 0}
-              className="rounded-lg border border-gray-300 bg-white px-3 py-2 font-medium text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:text-gray-400"
+              className={secondaryButtonClass}
             >
               Next
             </button>

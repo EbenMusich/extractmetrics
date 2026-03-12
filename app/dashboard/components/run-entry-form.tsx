@@ -1,12 +1,26 @@
 'use client'
 
-import { useActionState, useState, type FormEvent } from 'react'
+import {
+  useActionState,
+  useState,
+  type FormEvent,
+  type ReactNode,
+} from 'react'
 import { useFormStatus } from 'react-dom'
 import {
   createRunAction,
   updateRunAction,
   type CreateRunFormState,
 } from '@/app/dashboard/actions'
+import {
+  dashboardInsetSurfaceClass,
+  dashboardSurfaceClass,
+  errorTextClass,
+  helperTextClass,
+  inputClass,
+  labelClass,
+  primaryButtonClass,
+} from './dashboard-ui'
 
 const initialState: CreateRunFormState = {
   error: null,
@@ -130,12 +144,16 @@ function getOutputWeightWarning(values: RunFormValues) {
   return null
 }
 
+function joinClasses(...classes: Array<string | false | null | undefined>) {
+  return classes.filter(Boolean).join(' ')
+}
+
 function FieldError({ message }: { message?: string }) {
   if (!message) {
     return null
   }
 
-  return <p className="text-sm text-red-600">{message}</p>
+  return <p className={errorTextClass}>{message}</p>
 }
 
 type RunEntryFormProps = {
@@ -148,15 +166,54 @@ type RunEntryFormProps = {
   runId?: string
 }
 
+function FormSection({
+  title,
+  description,
+  children,
+}: {
+  title: string
+  description: string
+  children: ReactNode
+}) {
+  return (
+    <section className={`${dashboardInsetSurfaceClass} space-y-4 p-5 sm:p-6`}>
+      <div className="space-y-1">
+        <h3 className="text-base font-semibold text-gray-950">{title}</h3>
+        <p className="text-sm leading-6 text-gray-600">{description}</p>
+      </div>
+      {children}
+    </section>
+  )
+}
+
+function FieldShell({
+  label,
+  error,
+  helper,
+  className,
+  children,
+}: {
+  label: string
+  error?: string
+  helper?: string | null
+  className?: string
+  children: ReactNode
+}) {
+  return (
+    <label className={joinClasses('flex flex-col gap-2', className)}>
+      <span className={labelClass}>{label}</span>
+      {children}
+      {helper ? <p className={helperTextClass}>{helper}</p> : null}
+      <FieldError message={error} />
+    </label>
+  )
+}
+
 function SubmitButton({ label }: { label: string }) {
   const { pending } = useFormStatus()
 
   return (
-    <button
-      type="submit"
-      disabled={pending}
-      className="rounded bg-black px-4 py-2 text-white disabled:cursor-not-allowed disabled:opacity-60"
-    >
+    <button type="submit" disabled={pending} className={`${primaryButtonClass} min-w-32 px-5`}>
       {pending ? 'Saving...' : label}
     </button>
   )
@@ -214,168 +271,169 @@ export function RunEntryForm({
     <form
       action={formAction}
       onSubmit={handleSubmit}
-      className="flex w-full flex-col gap-4 rounded-xl border bg-white p-6"
+      className={`${dashboardSurfaceClass} flex w-full flex-col gap-6 p-6 sm:p-8`}
     >
       {mode === 'edit' && runId ? <input type="hidden" name="run_id" value={runId} /> : null}
       {successRedirectTo ? <input type="hidden" name="success_redirect_to" value={successRedirectTo} /> : null}
 
-      <div className="space-y-1">
-        <h2 className="text-xl font-semibold">{title}</h2>
-        <p className="text-sm text-gray-600">{description}</p>
+      <div className="space-y-2">
+        <h2 className="text-2xl font-semibold tracking-tight text-gray-950">{title}</h2>
+        <p className="max-w-2xl text-sm leading-6 text-gray-600">{description}</p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium">Run date</span>
-          <input
-            name="run_date"
-            type="date"
-            value={values.run_date}
-            onChange={(event) => handleChange('run_date', event.target.value)}
-            required
-            aria-invalid={Boolean(fieldErrors.run_date)}
-            className="rounded border p-2"
-          />
-          <FieldError message={fieldErrors.run_date} />
-        </label>
+      <FormSection
+        title="Run details"
+        description="Capture the identifying details for this extraction run."
+      >
+        <div className="grid gap-4 md:grid-cols-2">
+          <FieldShell label="Run date" error={fieldErrors.run_date}>
+            <input
+              name="run_date"
+              type="date"
+              value={values.run_date}
+              onChange={(event) => handleChange('run_date', event.target.value)}
+              required
+              aria-invalid={Boolean(fieldErrors.run_date)}
+              className={inputClass}
+            />
+          </FieldShell>
 
-        <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium">Output type</span>
-          <input
-            name="output_type"
-            type="text"
-            value={values.output_type}
-            onChange={(event) => handleChange('output_type', event.target.value)}
-            required
-            aria-invalid={Boolean(fieldErrors.output_type)}
-            className="rounded border p-2"
-          />
-          <FieldError message={fieldErrors.output_type} />
-        </label>
+          <FieldShell label="Output type" error={fieldErrors.output_type}>
+            <input
+              name="output_type"
+              type="text"
+              value={values.output_type}
+              onChange={(event) => handleChange('output_type', event.target.value)}
+              required
+              aria-invalid={Boolean(fieldErrors.output_type)}
+              className={inputClass}
+            />
+          </FieldShell>
 
-        <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium">Strain</span>
-          <input
-            name="strain_name"
-            type="text"
-            value={values.strain_name}
-            onChange={(event) => handleChange('strain_name', event.target.value)}
-            required
-            aria-invalid={Boolean(fieldErrors.strain_name)}
-            className="rounded border p-2"
-          />
-          <FieldError message={fieldErrors.strain_name} />
-        </label>
+          <FieldShell label="Strain" error={fieldErrors.strain_name}>
+            <input
+              name="strain_name"
+              type="text"
+              value={values.strain_name}
+              onChange={(event) => handleChange('strain_name', event.target.value)}
+              required
+              aria-invalid={Boolean(fieldErrors.strain_name)}
+              className={inputClass}
+            />
+          </FieldShell>
 
-        <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium">Grower</span>
-          <input
-            name="grower_name"
-            type="text"
-            value={values.grower_name}
-            onChange={(event) => handleChange('grower_name', event.target.value)}
-            required
-            aria-invalid={Boolean(fieldErrors.grower_name)}
-            className="rounded border p-2"
-          />
-          <FieldError message={fieldErrors.grower_name} />
-        </label>
+          <FieldShell label="Grower" error={fieldErrors.grower_name}>
+            <input
+              name="grower_name"
+              type="text"
+              value={values.grower_name}
+              onChange={(event) => handleChange('grower_name', event.target.value)}
+              required
+              aria-invalid={Boolean(fieldErrors.grower_name)}
+              className={inputClass}
+            />
+          </FieldShell>
+        </div>
+      </FormSection>
 
-        <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium">Biomass input (g)</span>
-          <input
-            name="biomass_input_g"
-            type="number"
-            step="0.01"
-            min="0.01"
-            value={values.biomass_input_g}
-            onChange={(event) => handleChange('biomass_input_g', event.target.value)}
-            required
-            aria-invalid={Boolean(fieldErrors.biomass_input_g)}
-            className="rounded border p-2"
-          />
-          <FieldError message={fieldErrors.biomass_input_g} />
-        </label>
+      <FormSection
+        title="Measurements and costs"
+        description="Enter the recorded output and cost values for this run."
+      >
+        <div className="grid gap-4 md:grid-cols-2">
+          <FieldShell label="Biomass input (g)" error={fieldErrors.biomass_input_g}>
+            <input
+              name="biomass_input_g"
+              type="number"
+              step="0.01"
+              min="0.01"
+              value={values.biomass_input_g}
+              onChange={(event) => handleChange('biomass_input_g', event.target.value)}
+              required
+              aria-invalid={Boolean(fieldErrors.biomass_input_g)}
+              className={inputClass}
+            />
+          </FieldShell>
 
-        <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium">Output (g)</span>
-          <input
-            name="output_weight_g"
-            type="number"
-            step="0.01"
-            min="0.01"
-            value={values.output_weight_g}
-            onChange={(event) => handleChange('output_weight_g', event.target.value)}
-            required
-            aria-invalid={Boolean(fieldErrors.output_weight_g)}
-            className="rounded border p-2"
-          />
-          <FieldError message={fieldErrors.output_weight_g} />
-          {outputWeightWarning ? <p className="text-sm text-amber-700">{outputWeightWarning}</p> : null}
-        </label>
+          <FieldShell
+            label="Output (g)"
+            error={fieldErrors.output_weight_g}
+            helper={outputWeightWarning}
+          >
+            <input
+              name="output_weight_g"
+              type="number"
+              step="0.01"
+              min="0.01"
+              value={values.output_weight_g}
+              onChange={(event) => handleChange('output_weight_g', event.target.value)}
+              required
+              aria-invalid={Boolean(fieldErrors.output_weight_g)}
+              className={inputClass}
+            />
+          </FieldShell>
 
-        <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium">Material cost</span>
-          <input
-            name="material_cost"
-            type="number"
-            step="0.01"
-            min="0"
-            value={values.material_cost}
-            onChange={(event) => handleChange('material_cost', event.target.value)}
-            required
-            aria-invalid={Boolean(fieldErrors.material_cost)}
-            className="rounded border p-2"
-          />
-          <FieldError message={fieldErrors.material_cost} />
-        </label>
+          <FieldShell label="Material cost" error={fieldErrors.material_cost}>
+            <input
+              name="material_cost"
+              type="number"
+              step="0.01"
+              min="0"
+              value={values.material_cost}
+              onChange={(event) => handleChange('material_cost', event.target.value)}
+              required
+              aria-invalid={Boolean(fieldErrors.material_cost)}
+              className={inputClass}
+            />
+          </FieldShell>
 
-        <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium">Utility cost</span>
-          <input
-            name="utility_cost"
-            type="number"
-            step="0.01"
-            min="0"
-            value={values.utility_cost}
-            onChange={(event) => handleChange('utility_cost', event.target.value)}
-            required
-            aria-invalid={Boolean(fieldErrors.utility_cost)}
-            className="rounded border p-2"
-          />
-          <FieldError message={fieldErrors.utility_cost} />
-        </label>
+          <FieldShell label="Utility cost" error={fieldErrors.utility_cost}>
+            <input
+              name="utility_cost"
+              type="number"
+              step="0.01"
+              min="0"
+              value={values.utility_cost}
+              onChange={(event) => handleChange('utility_cost', event.target.value)}
+              required
+              aria-invalid={Boolean(fieldErrors.utility_cost)}
+              className={inputClass}
+            />
+          </FieldShell>
 
-        <label className="flex flex-col gap-1 md:col-span-2">
-          <span className="text-sm font-medium">Other cost</span>
-          <input
-            name="other_cost"
-            type="number"
-            step="0.01"
-            min="0"
-            value={values.other_cost}
-            onChange={(event) => handleChange('other_cost', event.target.value)}
-            required
-            aria-invalid={Boolean(fieldErrors.other_cost)}
-            className="rounded border p-2"
-          />
-          <FieldError message={fieldErrors.other_cost} />
-        </label>
-      </div>
+          <FieldShell label="Other cost" error={fieldErrors.other_cost} className="md:col-span-2">
+            <input
+              name="other_cost"
+              type="number"
+              step="0.01"
+              min="0"
+              value={values.other_cost}
+              onChange={(event) => handleChange('other_cost', event.target.value)}
+              required
+              aria-invalid={Boolean(fieldErrors.other_cost)}
+              className={inputClass}
+            />
+          </FieldShell>
+        </div>
+      </FormSection>
 
-      <label className="flex flex-col gap-1">
-        <span className="text-sm font-medium">Notes</span>
-        <textarea
-          name="notes"
-          rows={4}
-          value={values.notes}
-          onChange={(event) => handleChange('notes', event.target.value)}
-          className="rounded border p-2"
-        />
-      </label>
+      <FormSection
+        title="Notes"
+        description="Optional operator notes, observations, or context for this run."
+      >
+        <FieldShell label="Notes">
+          <textarea
+            name="notes"
+            rows={5}
+            value={values.notes}
+            onChange={(event) => handleChange('notes', event.target.value)}
+            className={`${inputClass} resize-y`}
+          />
+        </FieldShell>
+      </FormSection>
 
       {shouldShowValidationSummary && validationMessages.length > 0 ? (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           <p className="font-medium">Please correct the highlighted fields.</p>
           <ul className="mt-2 list-disc pl-5">
             {validationMessages.map((message) => (
@@ -385,14 +443,17 @@ export function RunEntryForm({
         </div>
       ) : null}
 
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-col gap-3 border-t border-gray-200 pt-6 sm:flex-row sm:items-center sm:justify-between">
         <div aria-live="polite" className="text-sm">
           {state.error && Object.keys(state.fieldErrors).length === 0 ? (
             <p className="text-red-600">{state.error}</p>
           ) : null}
           {state.success ? <p className="text-green-700">{state.success}</p> : null}
         </div>
-        <SubmitButton label={submitLabel} />
+
+        <div className="flex justify-end">
+          <SubmitButton label={submitLabel} />
+        </div>
       </div>
     </form>
   )

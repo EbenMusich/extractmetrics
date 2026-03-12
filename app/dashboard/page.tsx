@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { DashboardAnalytics } from './components/dashboard-analytics'
+import { PageHeader, primaryButtonClass } from './components/dashboard-ui'
 
 type DashboardRun = {
   id: string
@@ -39,23 +40,22 @@ export default async function DashboardPage() {
   const runs: DashboardRun[] = data ?? []
 
   return (
-    <div className="space-y-8">
-      <section className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-        <div className="space-y-2">
-          <h1 className="text-3xl font-semibold">ExtractMetrics</h1>
-          <p className="text-sm text-gray-600">
-            Welcome back{user.email ? `, ${user.email}` : ''}. Track runs, review your metrics, and
-            keep the latest activity in one place.
-          </p>
-        </div>
-
-        <Link
-          href="/dashboard/new-run"
-          className="inline-flex items-center justify-center rounded-lg bg-black px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-gray-800"
-        >
-          + New Run
-        </Link>
-      </section>
+    <div className="space-y-8 lg:space-y-10">
+      <PageHeader
+        eyebrow="ExtractMetrics"
+        title="Dashboard"
+        description={
+          <>
+            Welcome back{user.email ? `, ${user.email}` : ''}. Review performance trends, recent
+            activity, and the latest run data from one place.
+          </>
+        }
+        action={
+          <Link href="/dashboard/new-run" className={`${primaryButtonClass} px-5`}>
+            + New Run
+          </Link>
+        }
+      />
 
       {error ? (
         <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
@@ -63,7 +63,7 @@ export default async function DashboardPage() {
         </div>
       ) : null}
 
-      <div className="space-y-8">
+      <div className="space-y-8 lg:space-y-10">
         <DashboardAnalytics runs={runs} />
       </div>
     </div>

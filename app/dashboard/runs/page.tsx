@@ -1,7 +1,9 @@
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import { RunHistoryTable } from '../components/run-history-table'
 import type { RunTableRun } from '../components/run-table-formatters'
 import { createClient } from '@/lib/supabase/server'
+import { PageHeader, primaryButtonClass } from '../components/dashboard-ui'
 
 export default async function RunsPage() {
   const supabase = await createClient()
@@ -24,13 +26,16 @@ export default async function RunsPage() {
   const runs: RunTableRun[] = data ?? []
 
   return (
-    <div className="space-y-8">
-      <section className="space-y-2">
-        <h1 className="text-3xl font-semibold">Run history</h1>
-        <p className="text-sm text-gray-600">
-          Review every saved extraction run in one place.
-        </p>
-      </section>
+    <div className="space-y-8 lg:space-y-10">
+      <PageHeader
+        title="Run history"
+        description="Review every saved extraction run, search quickly, and export filtered results when needed."
+        action={
+          <Link href="/dashboard/new-run" className={primaryButtonClass}>
+            + New Run
+          </Link>
+        }
+      />
 
       {error ? (
         <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">

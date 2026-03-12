@@ -6,6 +6,7 @@ import {
   type AggregatedPerformanceMetric,
   type PerformanceMetricRun,
 } from './analytics-metrics'
+import { EmptyState, SectionHeader, dashboardSurfaceClass } from './dashboard-ui'
 
 type PerformanceInsightsProps = {
   filteredRuns: PerformanceMetricRun[]
@@ -135,25 +136,35 @@ export function PerformanceInsights({ filteredRuns }: PerformanceInsightsProps) 
   }, [filteredRuns])
 
   return (
-    <section className="space-y-3">
-      <div>
-        <h2 className="text-xl font-semibold">Performance Insights</h2>
-        <p className="text-sm text-gray-600">
-          Automatic highlights based on average yield and cost across the selected runs.
-        </p>
-      </div>
+    <section className="space-y-4">
+      <SectionHeader
+        title="Performance insights"
+        description="Automatic highlights based on average yield and cost across the selected runs."
+      />
 
       {filteredRuns.length === 0 ? (
-        <div className="rounded-xl border bg-white p-5 text-sm text-gray-600">
-          No run data available yet.
-        </div>
+        <EmptyState
+          compact
+          title="No insights yet"
+          description="Add a run or widen the date filter to see performance highlights."
+        />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {cards.map((card) => (
-            <article key={card.title} className="rounded-xl border bg-white p-5">
-              <p className="text-sm text-gray-600">{card.title}</p>
-              <p className="mt-2 text-lg font-semibold text-gray-900">{card.label}</p>
-              <p className="mt-1 text-2xl font-semibold">{card.value}</p>
+          {cards.map((card, index) => (
+            <article
+              key={card.title}
+              className={`${dashboardSurfaceClass} flex min-h-36 flex-col justify-between p-5 sm:p-6`}
+            >
+              <div className="space-y-3">
+                <p className="text-sm font-medium text-gray-600">{card.title}</p>
+                <p className="text-lg font-semibold tracking-tight text-gray-950">{card.label}</p>
+              </div>
+              <div className="mt-5 flex items-end justify-between gap-4">
+                <p className="text-3xl font-semibold tracking-tight text-gray-950">{card.value}</p>
+                <span className="text-xs uppercase tracking-[0.18em] text-gray-400">
+                  Insight {index + 1}
+                </span>
+              </div>
             </article>
           ))}
         </div>

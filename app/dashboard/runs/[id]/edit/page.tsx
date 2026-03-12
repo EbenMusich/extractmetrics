@@ -1,6 +1,6 @@
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { RunEntryForm } from '@/app/dashboard/components/run-entry-form'
+import { PageHeader } from '@/app/dashboard/components/dashboard-ui'
 import { requireUser } from '@/lib/auth/require-user'
 import { createClient } from '@/lib/supabase/server'
 
@@ -25,19 +25,13 @@ export default async function EditRunPage({ params }: EditRunPageProps) {
 
   if (error) {
     return (
-      <section className="space-y-6">
-        <div className="space-y-3">
-          <Link href="/dashboard/runs" className="inline-flex text-sm text-gray-600 transition hover:text-gray-900">
-            Back to run history
-          </Link>
-
-          <div className="space-y-2">
-            <h1 className="text-3xl font-semibold text-gray-900">Edit run</h1>
-            <p className="text-sm text-gray-600">
-              Update this extraction run and return to your full run history.
-            </p>
-          </div>
-        </div>
+      <section className="space-y-8">
+        <PageHeader
+          backHref="/dashboard/runs"
+          backLabel="Back to run history"
+          title="Edit run"
+          description="Update this extraction run and return to your full run history."
+        />
 
         <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
           Unable to load this run right now. {error.message}
@@ -51,19 +45,13 @@ export default async function EditRunPage({ params }: EditRunPageProps) {
   }
 
   return (
-    <section className="space-y-6">
-      <div className="space-y-3">
-        <Link href="/dashboard/runs" className="inline-flex text-sm text-gray-600 transition hover:text-gray-900">
-          Back to run history
-        </Link>
-
-        <div className="space-y-2">
-          <h1 className="text-3xl font-semibold text-gray-900">Edit run</h1>
-          <p className="text-sm text-gray-600">
-            Update this extraction run and return to your full run history.
-          </p>
-        </div>
-      </div>
+    <section className="space-y-8">
+      <PageHeader
+        backHref="/dashboard/runs"
+        backLabel="Back to run history"
+        title="Edit run"
+        description="Update this extraction run and return to your full run history."
+      />
 
       <div className="max-w-4xl">
         <RunEntryForm

@@ -104,7 +104,7 @@ export function DashboardAnalytics({ runs }: DashboardAnalyticsProps) {
       : 'No runs match the selected date range.'
 
   return (
-    <>
+    <div className="space-y-8 lg:space-y-10">
       <DashboardDateFilter value={dateFilter} onChange={setDateFilter} />
       <SummaryMetrics
         totalRuns={totalRuns}
@@ -117,6 +117,6 @@ export function DashboardAnalytics({ runs }: DashboardAnalyticsProps) {
       <GrowerPerformanceTable runs={filteredRuns} emptyMessage={emptyMessage} />
       <OutputTypePerformanceTable runs={filteredRuns} emptyMessage={emptyMessage} />
       <RecentRunsTable runs={filteredRuns} emptyMessage={emptyMessage} />
-    </>
+    </div>
   )
 }

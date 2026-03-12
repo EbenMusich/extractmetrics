@@ -4,6 +4,14 @@ import {
   aggregatePerformanceMetrics,
   type PerformanceMetricRun,
 } from './analytics-metrics'
+import {
+  EmptyState,
+  SectionHeader,
+  tableClass,
+  tableHeadClass,
+  tableRowClass,
+  tableWrapperClass,
+} from './dashboard-ui'
 
 type GrowerPerformanceRun = PerformanceMetricRun
 
@@ -56,45 +64,47 @@ export function GrowerPerformanceTable({
   const rows = aggregatePerformanceMetrics(runs, 'grower_name')
 
   return (
-    <section className="space-y-3">
-      <div>
-        <h2 className="text-xl font-semibold">Grower performance</h2>
-        <p className="text-sm text-gray-600">
-          Aggregated yield, cost, and output by grower across your saved runs.
-        </p>
-      </div>
+    <section className="space-y-4">
+      <SectionHeader
+        title="Grower performance"
+        description="Aggregated yield, cost, and output by grower across your saved runs."
+      />
 
-      <div className="overflow-hidden rounded-xl border bg-white">
+      <div className={tableWrapperClass}>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y">
-            <thead className="bg-gray-50 text-left text-sm text-gray-600">
+          <table className={tableClass}>
+            <thead className={tableHeadClass}>
               <tr>
-                <th className="px-4 py-3 font-medium">Grower</th>
-                <th className="px-4 py-3 font-medium">Runs</th>
-                <th className="px-4 py-3 font-medium">Avg Yield</th>
-                <th className="px-4 py-3 font-medium">Avg Cost / g</th>
-                <th className="px-4 py-3 font-medium">Total Output</th>
+                <th className="px-4 py-3.5 sm:px-5">Grower</th>
+                <th className="px-4 py-3.5 text-right sm:px-5">Runs</th>
+                <th className="px-4 py-3.5 text-right sm:px-5">Avg Yield</th>
+                <th className="px-4 py-3.5 text-right sm:px-5">Avg Cost / g</th>
+                <th className="px-4 py-3.5 text-right sm:px-5">Total Output</th>
               </tr>
             </thead>
-            <tbody className="divide-y text-sm">
+            <tbody className="text-sm">
               {rows.length === 0 ? (
                 <tr>
-                  <td className="px-4 py-6 text-gray-600" colSpan={5}>
-                    {emptyMessage}
+                  <td className="px-4 py-6 sm:px-5" colSpan={5}>
+                    <EmptyState compact title="No grower data yet" description={emptyMessage} />
                   </td>
                 </tr>
               ) : (
                 rows.map((row) => (
-                  <tr key={row.label}>
-                    <td className="px-4 py-3 font-medium text-gray-900">{row.label}</td>
-                    <td className="px-4 py-3 text-gray-700">{row.runCount}</td>
-                    <td className="px-4 py-3 text-gray-700">
+                  <tr key={row.label} className={tableRowClass}>
+                    <td className="px-4 py-3.5 font-medium text-gray-900 sm:px-5">{row.label}</td>
+                    <td className="px-4 py-3.5 text-right tabular-nums text-gray-700 sm:px-5">
+                      {row.runCount}
+                    </td>
+                    <td className="px-4 py-3.5 text-right tabular-nums text-gray-700 sm:px-5">
                       {formatPercent(row.averageYieldPercent)}
                     </td>
-                    <td className="px-4 py-3 text-gray-700">
+                    <td className="px-4 py-3.5 text-right tabular-nums text-gray-700 sm:px-5">
                       {formatCurrency(row.averageCostPerGram)}
                     </td>
-                    <td className="px-4 py-3 text-gray-700">{formatGrams(row.totalOutputG)}</td>
+                    <td className="px-4 py-3.5 text-right tabular-nums text-gray-700 sm:px-5">
+                      {formatGrams(row.totalOutputG)}
+                    </td>
                   </tr>
                 ))
               )}
