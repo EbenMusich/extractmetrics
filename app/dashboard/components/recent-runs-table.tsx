@@ -49,7 +49,7 @@ export function RecentRunsTable({
   const visibleRuns = runs.slice(0, MAX_VISIBLE_RUNS)
 
   return (
-    <section className="space-y-4">
+    <section className="space-y-5">
       <SectionHeader
         title="Recent runs"
         description="Your latest saved extraction runs."

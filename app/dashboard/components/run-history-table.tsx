@@ -107,7 +107,7 @@ export function RunHistoryTable({ runs }: RunHistoryTableProps) {
       />
 
       <div className={tableWrapperClass}>
-        <div className="border-b border-gray-200/80 px-4 py-4 sm:px-5">
+        <div className="border-b border-gray-200 px-4 py-4 sm:px-5">
           <label className="flex w-full flex-col gap-1 text-sm text-gray-600">
             <span className="font-medium text-gray-700">Search runs</span>
             <input
@@ -135,7 +135,7 @@ export function RunHistoryTable({ runs }: RunHistoryTableProps) {
                 <th className={numericCellClass}>Output</th>
                 <th className={numericCellClass}>Yield %</th>
                 <th className={numericCellClass}>Cost / g</th>
-                <th className="px-4 py-3.5 text-right sm:px-5">Actions</th>
+                <th className="px-4 py-3 text-right sm:px-5">Actions</th>
               </tr>
             </thead>
             <tbody className="text-gray-700">
@@ -170,7 +170,7 @@ export function RunHistoryTable({ runs }: RunHistoryTableProps) {
                     <td className={numericCellClass}>{formatGrams(run.output_weight_g)}</td>
                     <td className={numericCellClass}>{getFormattedYieldPercent(run)}</td>
                     <td className={numericCellClass}>{getFormattedCostPerGram(run)}</td>
-                    <td className="px-4 py-3.5 sm:px-5">
+                    <td className="px-4 py-3 sm:px-5">
                       <div className="flex justify-end gap-2">
                         <Link
                           href={`/dashboard/runs/${run.id}/edit`}

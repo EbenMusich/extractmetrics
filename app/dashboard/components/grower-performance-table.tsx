@@ -64,7 +64,7 @@ export function GrowerPerformanceTable({
   const rows = aggregatePerformanceMetrics(runs, 'grower_name')
 
   return (
-    <section className="space-y-4">
+    <section className="space-y-5">
       <SectionHeader
         title="Grower performance"
         description="Aggregated yield, cost, and output by grower across your saved runs."
@@ -75,11 +75,11 @@ export function GrowerPerformanceTable({
           <table className={tableClass}>
             <thead className={tableHeadClass}>
               <tr>
-                <th className="px-4 py-3.5 sm:px-5">Grower</th>
-                <th className="px-4 py-3.5 text-right sm:px-5">Runs</th>
-                <th className="px-4 py-3.5 text-right sm:px-5">Avg Yield</th>
-                <th className="px-4 py-3.5 text-right sm:px-5">Avg Cost / g</th>
-                <th className="px-4 py-3.5 text-right sm:px-5">Total Output</th>
+                <th className="px-4 py-3 sm:px-5">Grower</th>
+                <th className="px-4 py-3 text-right sm:px-5">Runs</th>
+                <th className="px-4 py-3 text-right sm:px-5">Avg Yield</th>
+                <th className="px-4 py-3 text-right sm:px-5">Avg Cost / g</th>
+                <th className="px-4 py-3 text-right sm:px-5">Total Output</th>
               </tr>
             </thead>
             <tbody className="text-sm">
@@ -92,17 +92,17 @@ export function GrowerPerformanceTable({
               ) : (
                 rows.map((row) => (
                   <tr key={row.label} className={tableRowClass}>
-                    <td className="px-4 py-3.5 font-medium text-gray-900 sm:px-5">{row.label}</td>
-                    <td className="px-4 py-3.5 text-right tabular-nums text-gray-700 sm:px-5">
+                    <td className="px-4 py-3 font-medium text-gray-900 sm:px-5">{row.label}</td>
+                    <td className="px-4 py-3 text-right tabular-nums text-gray-700 sm:px-5">
                       {row.runCount}
                     </td>
-                    <td className="px-4 py-3.5 text-right tabular-nums text-gray-700 sm:px-5">
+                    <td className="px-4 py-3 text-right tabular-nums text-gray-700 sm:px-5">
                       {formatPercent(row.averageYieldPercent)}
                     </td>
-                    <td className="px-4 py-3.5 text-right tabular-nums text-gray-700 sm:px-5">
+                    <td className="px-4 py-3 text-right tabular-nums text-gray-700 sm:px-5">
                       {formatCurrency(row.averageCostPerGram)}
                     </td>
-                    <td className="px-4 py-3.5 text-right tabular-nums text-gray-700 sm:px-5">
+                    <td className="px-4 py-3 text-right tabular-nums text-gray-700 sm:px-5">
                       {formatGrams(row.totalOutputG)}
                     </td>
                   </tr>

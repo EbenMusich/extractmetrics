@@ -136,7 +136,7 @@ export function PerformanceInsights({ filteredRuns }: PerformanceInsightsProps) 
   }, [filteredRuns])
 
   return (
-    <section className="space-y-4">
+    <section className="space-y-5">
       <SectionHeader
         title="Performance insights"
         description="Automatic highlights based on average yield and cost across the selected runs."
@@ -159,9 +159,9 @@ export function PerformanceInsights({ filteredRuns }: PerformanceInsightsProps) 
                 <p className="text-sm font-medium text-gray-600">{card.title}</p>
                 <p className="text-lg font-semibold tracking-tight text-gray-950">{card.label}</p>
               </div>
-              <div className="mt-5 flex items-end justify-between gap-4">
+              <div className="mt-6 flex items-end justify-between gap-4">
                 <p className="text-3xl font-semibold tracking-tight text-gray-950">{card.value}</p>
-                <span className="text-xs uppercase tracking-[0.18em] text-gray-400">
+                <span className="text-xs font-medium uppercase tracking-[0.18em] text-gray-400">
                   Insight {index + 1}
                 </span>
               </div>

@@ -23,7 +23,7 @@ export function DashboardDateFilter({
   onChange,
 }: DashboardDateFilterProps) {
   return (
-    <section className="space-y-4">
+    <section className="space-y-5">
       <SectionHeader
         title="Analytics overview"
         description="Filter your saved runs to update the dashboard metrics, comparisons, and recent activity."
@@ -38,10 +38,10 @@ export function DashboardDateFilter({
                   type="button"
                   onClick={() => onChange(option.value)}
                   aria-pressed={isActive}
-                  className={`rounded-xl px-3.5 py-2 text-sm font-medium transition ${
+                  className={`rounded-xl border px-3.5 py-2 text-sm font-medium transition ${
                     isActive
-                      ? 'bg-gray-900 text-white shadow-sm'
-                      : 'text-gray-600 hover:bg-white hover:text-gray-900'
+                      ? 'border-gray-300 bg-white text-gray-950 shadow-sm'
+                      : 'border-transparent text-gray-600 hover:border-gray-200 hover:bg-white hover:text-gray-900'
                   }`}
                 >
                   {option.label}

@@ -14,8 +14,8 @@ const currencyFormatter = new Intl.NumberFormat('en-US', {
 })
 
 export const numericCellClass =
-  'whitespace-nowrap px-4 py-3.5 text-right text-sm tabular-nums text-gray-700 sm:px-5'
-export const textCellClass = 'whitespace-nowrap px-4 py-3.5 text-sm text-gray-700 sm:px-5'
+  'whitespace-nowrap px-4 py-3 text-right text-sm tabular-nums text-gray-700 sm:px-5'
+export const textCellClass = 'whitespace-nowrap px-4 py-3 text-sm text-gray-700 sm:px-5'
 
 function coerceNumber(value: number | null | undefined) {
   return typeof value === 'number' && Number.isFinite(value) ? value : null

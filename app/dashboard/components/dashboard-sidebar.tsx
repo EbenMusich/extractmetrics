@@ -34,7 +34,7 @@ export function DashboardSidebar() {
               aria-current={isActive ? 'page' : undefined}
               className={`rounded-xl border px-3.5 py-2.5 text-sm font-medium transition ${
                 isActive
-                  ? 'border-gray-900 bg-gray-900 text-white shadow-sm'
+                  ? 'border-gray-300 bg-white text-gray-950 shadow-sm'
                   : 'border-transparent text-gray-600 hover:border-gray-200 hover:bg-white hover:text-gray-900'
               }`}
             >

@@ -177,8 +177,8 @@ function FormSection({
 }) {
   return (
     <section className={`${dashboardInsetSurfaceClass} space-y-4 p-5 sm:p-6`}>
-      <div className="space-y-1">
-        <h3 className="text-base font-semibold text-gray-950">{title}</h3>
+      <div className="space-y-1.5">
+        <h3 className="text-lg font-semibold tracking-tight text-gray-950">{title}</h3>
         <p className="text-sm leading-6 text-gray-600">{description}</p>
       </div>
       {children}
@@ -276,8 +276,10 @@ export function RunEntryForm({
       {mode === 'edit' && runId ? <input type="hidden" name="run_id" value={runId} /> : null}
       {successRedirectTo ? <input type="hidden" name="success_redirect_to" value={successRedirectTo} /> : null}
 
-      <div className="space-y-2">
-        <h2 className="text-2xl font-semibold tracking-tight text-gray-950">{title}</h2>
+      <div className="space-y-2.5">
+        <h2 className="text-2xl font-semibold tracking-tight text-gray-950 sm:text-[1.75rem]">
+          {title}
+        </h2>
         <p className="max-w-2xl text-sm leading-6 text-gray-600">{description}</p>
       </div>
 
