@@ -1,0 +1,121 @@
+'use client'
+
+import { useMemo } from 'react'
+import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts'
+import { getYieldPercent } from './analytics-metrics'
+import { AnalyticsChartCard, analyticsChartTheme } from './analytics-chart-card'
+import { formatDate, type RunTableRun } from './run-table-formatters'
+
+type YieldTrendChartProps = {
+  runs: RunTableRun[]
+  emptyMessage: string
+}
+
+type YieldTrendPoint = {
+  date: string
+  value: number
+}
+
+const percentFormatter = new Intl.NumberFormat('en-US', {
+  minimumFractionDigits: 1,
+  maximumFractionDigits: 1,
+})
+
+function sortRunsByDate(left: RunTableRun, right: RunTableRun) {
+  return left.run_date.localeCompare(right.run_date)
+}
+
+function formatAxisDate(value: string) {
+  const [year, month, day] = value.split('-').map(Number)
+  if (!year || !month || !day) {
+    return value
+  }
+
+  return `${String(month).padStart(2, '0')}/${String(day).padStart(2, '0')}`
+}
+
+function formatPercent(value: number) {
+  return `${percentFormatter.format(value)}%`
+}
+
+export function YieldTrendChart({ runs, emptyMessage }: YieldTrendChartProps) {
+  const data = useMemo<YieldTrendPoint[]>(() => {
+    return [...runs]
+      .sort(sortRunsByDate)
+      .map((run) => {
+        const yieldPercent = getYieldPercent(run)
+
+        if (yieldPercent === null) {
+          return null
+        }
+
+        return {
+          date: formatDate(run.run_date),
+          value: Number(yieldPercent.toFixed(2)),
+        }
+      })
+      .filter((point): point is YieldTrendPoint => point !== null)
+  }, [runs])
+
+  return (
+    <AnalyticsChartCard
+      title="Yield trend"
+      description="Yield percentage across the selected runs, ordered by run date."
+      emptyTitle="No yield trend yet"
+      emptyMessage={emptyMessage}
+      hasData={data.length > 0}
+    >
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={data} margin={{ top: 8, right: 18, left: 4, bottom: 0 }}>
+          <CartesianGrid
+            stroke={analyticsChartTheme.gridStroke}
+            strokeDasharray="3 3"
+            vertical={false}
+          />
+          <XAxis
+            dataKey="date"
+            tickFormatter={formatAxisDate}
+            tick={analyticsChartTheme.axisTick}
+            tickLine={false}
+            axisLine={false}
+            tickMargin={10}
+            minTickGap={24}
+          />
+          <YAxis
+            tickFormatter={formatPercent}
+            tick={analyticsChartTheme.axisTick}
+            tickLine={false}
+            axisLine={false}
+            tickMargin={10}
+            width={64}
+          />
+          <Tooltip
+            formatter={(value) => (typeof value === 'number' ? formatPercent(value) : value)}
+            labelFormatter={(label) => `Run date: ${label}`}
+            contentStyle={analyticsChartTheme.tooltipContentStyle}
+            labelStyle={analyticsChartTheme.tooltipLabelStyle}
+            itemStyle={analyticsChartTheme.tooltipItemStyle}
+            cursor={{ stroke: '#cbd5e1', strokeDasharray: '4 4' }}
+          />
+          <Line
+            type="monotone"
+            dataKey="value"
+            name="Yield"
+            stroke="#4f46e5"
+            strokeWidth={2.5}
+            dot={{ r: 3.5, strokeWidth: 2, fill: '#ffffff' }}
+            activeDot={{ r: 5, fill: '#4f46e5', stroke: '#ffffff', strokeWidth: 2 }}
+          />
+        </LineChart>
+      </ResponsiveContainer>
+    </AnalyticsChartCard>
+  )
+}
