@@ -16,6 +16,8 @@ export type CreateRunFormState = {
       | 'grower_name'
       | 'biomass_input_g'
       | 'output_weight_g'
+      | 'labor_minutes'
+      | 'labor_rate'
       | 'material_cost'
       | 'utility_cost'
       | 'other_cost',
@@ -38,6 +40,9 @@ type RunFormValues = {
   growerName: string
   biomassInputG: number | null
   outputWeightG: number | null
+  laborMinutes: number | null
+  laborRate: number | null
+  laborCost: number
   materialCost: number | null
   utilityCost: number | null
   otherCost: number | null
@@ -67,6 +72,10 @@ function readRedirectTarget(formData: FormData) {
 function readRunId(formData: FormData) {
   const runId = readText(formData, 'run_id')
   return runId || null
+}
+
+function calculateLaborCost(laborMinutes: number, laborRate: number) {
+  return (laborMinutes / 60) * laborRate
 }
 
 function createFieldErrorState(
@@ -102,6 +111,9 @@ function validateRunForm(formData: FormData) {
     notes: readText(formData, 'notes'),
     biomassInputG: readNumber(formData, 'biomass_input_g'),
     outputWeightG: readNumber(formData, 'output_weight_g'),
+    laborMinutes: readNumber(formData, 'labor_minutes'),
+    laborRate: readNumber(formData, 'labor_rate'),
+    laborCost: 0,
     materialCost: readNumber(formData, 'material_cost'),
     utilityCost: readNumber(formData, 'utility_cost'),
     otherCost: readNumber(formData, 'other_cost'),
@@ -134,6 +146,18 @@ function validateRunForm(formData: FormData) {
     fieldErrors.output_weight_g = 'Output weight must be greater than 0.'
   }
 
+  if (values.laborMinutes === null) {
+    fieldErrors.labor_minutes = 'Labor minutes is required.'
+  } else if (!Number.isFinite(values.laborMinutes) || values.laborMinutes < 0) {
+    fieldErrors.labor_minutes = 'Labor minutes must be 0 or greater.'
+  }
+
+  if (values.laborRate === null) {
+    fieldErrors.labor_rate = 'Labor rate is required.'
+  } else if (!Number.isFinite(values.laborRate) || values.laborRate < 0) {
+    fieldErrors.labor_rate = 'Labor rate must be 0 or greater.'
+  }
+
   if (values.materialCost === null) {
     fieldErrors.material_cost = 'Material cost is required.'
   } else if (!Number.isFinite(values.materialCost) || values.materialCost < 0) {
@@ -152,6 +176,14 @@ function validateRunForm(formData: FormData) {
     fieldErrors.other_cost = 'Other cost must be 0 or greater.'
   }
 
+  if (
+    Object.keys(fieldErrors).length === 0 &&
+    values.laborMinutes !== null &&
+    values.laborRate !== null
+  ) {
+    values.laborCost = calculateLaborCost(values.laborMinutes, values.laborRate)
+  }
+
   return { values, fieldErrors }
 }
 
@@ -163,6 +195,9 @@ function buildRunPayload(userId: string, values: RunFormValues) {
     grower_name: values.growerName,
     biomass_input_g: values.biomassInputG,
     output_weight_g: values.outputWeightG,
+    labor_minutes: values.laborMinutes,
+    labor_rate: values.laborRate,
+    labor_cost: values.laborCost,
     material_cost: values.materialCost,
     utility_cost: values.utilityCost,
     other_cost: values.otherCost,

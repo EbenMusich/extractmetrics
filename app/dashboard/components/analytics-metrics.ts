@@ -4,6 +4,8 @@ export type PerformanceMetricRun = {
   output_type?: string | null
   biomass_input_g?: number | null
   output_weight_g?: number | null
+  labor_minutes?: number | null
+  labor_rate?: number | null
   labor_cost?: number | null
   material_cost?: number | null
   utility_cost?: number | null
@@ -39,6 +41,22 @@ function getMetricLabel(value: string | null | undefined) {
   return normalizedValue ? normalizedValue : 'Unspecified'
 }
 
+export function getLaborCost(run: PerformanceMetricRun) {
+  const laborCost = coerceNumber(run.labor_cost)
+  if (laborCost !== null) {
+    return laborCost
+  }
+
+  const laborMinutes = coerceNumber(run.labor_minutes)
+  const laborRate = coerceNumber(run.labor_rate)
+
+  if (laborMinutes === null || laborRate === null) {
+    return 0
+  }
+
+  return (laborMinutes / 60) * laborRate
+}
+
 export function getYieldPercent(run: PerformanceMetricRun) {
   const biomassInputG = coerceNumber(run.biomass_input_g)
   const outputWeightG = coerceNumber(run.output_weight_g)
@@ -57,13 +75,16 @@ export function getCostPerGram(run: PerformanceMetricRun) {
     return null
   }
 
-  const totalCost =
-    (coerceNumber(run.labor_cost) ?? 0) +
+  return getTotalCost(run) / outputWeightG
+}
+
+export function getTotalCost(run: PerformanceMetricRun) {
+  return (
+    getLaborCost(run) +
     (coerceNumber(run.material_cost) ?? 0) +
     (coerceNumber(run.utility_cost) ?? 0) +
     (coerceNumber(run.other_cost) ?? 0)
-
-  return totalCost / outputWeightG
+  )
 }
 
 export function aggregatePerformanceMetrics(

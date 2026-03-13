@@ -14,7 +14,7 @@ import { RecentRunsTable } from './recent-runs-table'
 import { StrainPerformanceTable } from './strain-performance-table'
 import { SummaryMetrics } from './summary-metrics'
 import { YieldTrendChart } from './yield-trend-chart'
-import { getCostPerGram, getYieldPercent } from './analytics-metrics'
+import { getCostPerGram, getTotalCost, getYieldPercent } from './analytics-metrics'
 
 type DashboardAnalyticsRun = {
   id: string
@@ -93,6 +93,7 @@ export function DashboardAnalytics({ runs }: DashboardAnalyticsProps) {
   const totalOutputWeight = roundMetric(
     filteredRuns.reduce((sum, run) => sum + (run.output_weight_g ?? 0), 0)
   )
+  const totalCost = roundMetric(filteredRuns.reduce((sum, run) => sum + getTotalCost(run), 0))
   const averageYieldPercent =
     yields.length > 0
       ? roundMetric(yields.reduce((sum, value) => sum + value, 0) / yields.length)
@@ -111,6 +112,7 @@ export function DashboardAnalytics({ runs }: DashboardAnalyticsProps) {
       <DashboardDateFilter value={dateFilter} onChange={setDateFilter} />
       <SummaryMetrics
         totalRuns={totalRuns}
+        totalCost={totalCost}
         averageYieldPercent={averageYieldPercent}
         averageCostPerGram={averageCostPerGram}
         totalOutputWeight={totalOutputWeight}

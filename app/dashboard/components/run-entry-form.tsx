@@ -36,6 +36,8 @@ export type RunFormValues = {
   grower_name: string
   biomass_input_g: string
   output_weight_g: string
+  labor_minutes: string
+  labor_rate: string
   material_cost: string
   utility_cost: string
   other_cost: string
@@ -58,6 +60,8 @@ function createInitialValues(): RunFormValues {
     grower_name: '',
     biomass_input_g: '',
     output_weight_g: '',
+    labor_minutes: '0',
+    labor_rate: '0',
     material_cost: '',
     utility_cost: '',
     other_cost: '',
@@ -76,6 +80,8 @@ function validateForm(values: RunFormValues): RunFormFieldErrors {
   const errors: RunFormFieldErrors = {}
   const biomassInput = Number(values.biomass_input_g)
   const outputWeight = Number(values.output_weight_g)
+  const laborMinutes = Number(values.labor_minutes)
+  const laborRate = Number(values.labor_rate)
   const materialCost = Number(values.material_cost)
   const utilityCost = Number(values.utility_cost)
   const otherCost = Number(values.other_cost)
@@ -103,6 +109,18 @@ function validateForm(values: RunFormValues): RunFormFieldErrors {
     errors.output_weight_g = 'Output weight is required.'
   } else if (!Number.isFinite(outputWeight) || outputWeight <= 0) {
     errors.output_weight_g = 'Output weight must be greater than 0.'
+  }
+
+  if (!values.labor_minutes.trim()) {
+    errors.labor_minutes = 'Labor minutes is required.'
+  } else if (!Number.isFinite(laborMinutes) || laborMinutes < 0) {
+    errors.labor_minutes = 'Labor minutes must be 0 or greater.'
+  }
+
+  if (!values.labor_rate.trim()) {
+    errors.labor_rate = 'Labor rate is required.'
+  } else if (!Number.isFinite(laborRate) || laborRate < 0) {
+    errors.labor_rate = 'Labor rate must be 0 or greater.'
   }
 
   if (!values.material_cost.trim()) {
@@ -385,6 +403,34 @@ export function RunEntryForm({
               onChange={(event) => handleChange('material_cost', event.target.value)}
               required
               aria-invalid={Boolean(fieldErrors.material_cost)}
+              className={inputClass}
+            />
+          </FieldShell>
+
+          <FieldShell label="Labor minutes" error={fieldErrors.labor_minutes}>
+            <input
+              name="labor_minutes"
+              type="number"
+              step="1"
+              min="0"
+              value={values.labor_minutes}
+              onChange={(event) => handleChange('labor_minutes', event.target.value)}
+              required
+              aria-invalid={Boolean(fieldErrors.labor_minutes)}
+              className={inputClass}
+            />
+          </FieldShell>
+
+          <FieldShell label="Labor rate ($/hr)" error={fieldErrors.labor_rate}>
+            <input
+              name="labor_rate"
+              type="number"
+              step="0.01"
+              min="0"
+              value={values.labor_rate}
+              onChange={(event) => handleChange('labor_rate', event.target.value)}
+              required
+              aria-invalid={Boolean(fieldErrors.labor_rate)}
               className={inputClass}
             />
           </FieldShell>

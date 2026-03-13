@@ -1,5 +1,10 @@
 import { NextResponse } from 'next/server'
-import { getCostPerGram, getYieldPercent, type PerformanceMetricRun } from '@/app/dashboard/components/analytics-metrics'
+import {
+  getCostPerGram,
+  getTotalCost,
+  getYieldPercent,
+  type PerformanceMetricRun,
+} from '@/app/dashboard/components/analytics-metrics'
 import { filterRunsBySearchTerm, normalizeRunHistorySearchTerm } from '@/app/dashboard/components/run-history-filter'
 import { formatDate } from '@/app/dashboard/components/run-table-formatters'
 import { createClient } from '@/lib/supabase/server'
@@ -18,6 +23,9 @@ const CSV_HEADERS = [
   'Biomass Input (g)',
   'Output (g)',
   'Yield %',
+  'Labor Minutes',
+  'Labor Rate',
+  'Labor Cost',
   'Material Cost',
   'Utility Cost',
   'Other Cost',
@@ -37,15 +45,6 @@ function formatOptionalText(value: string | null | undefined) {
 function formatNumber(value: number | null | undefined, fractionDigits: number) {
   const normalizedValue = coerceNumber(value)
   return normalizedValue === null ? '' : normalizedValue.toFixed(fractionDigits)
-}
-
-function getTotalCost(run: ExportRun) {
-  return (
-    (coerceNumber(run.labor_cost) ?? 0) +
-    (coerceNumber(run.material_cost) ?? 0) +
-    (coerceNumber(run.utility_cost) ?? 0) +
-    (coerceNumber(run.other_cost) ?? 0)
-  )
 }
 
 function escapeCsvCell(value: string) {
@@ -75,6 +74,9 @@ function buildCsv(run: ExportRun[]) {
       formatNumber(item.biomass_input_g, 1),
       formatNumber(item.output_weight_g, 1),
       formatNumber(yieldPercent, 1),
+      formatNumber(item.labor_minutes, 0),
+      formatNumber(item.labor_rate, 2),
+      formatNumber(item.labor_cost, 2),
       formatNumber(item.material_cost, 2),
       formatNumber(item.utility_cost, 2),
       formatNumber(item.other_cost, 2),
@@ -105,7 +107,7 @@ export async function GET(request: Request) {
   const { data, error } = await supabase
     .from('runs')
     .select(
-      'run_date, strain_name, grower_name, output_type, biomass_input_g, output_weight_g, labor_cost, material_cost, utility_cost, other_cost, notes, created_at'
+      'run_date, strain_name, grower_name, output_type, biomass_input_g, output_weight_g, labor_minutes, labor_rate, labor_cost, material_cost, utility_cost, other_cost, notes, created_at'
     )
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
