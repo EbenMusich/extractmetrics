@@ -32,18 +32,22 @@ export function SummaryMetrics({
   ]
 
   return (
-    <section className="space-y-4">
+    <section className="space-y-5">
       <SectionHeader title="Summary" description="Quick stats from your saved extraction runs." />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {cards.map((card) => (
           <article
             key={card.label}
-            className={`${dashboardSurfaceClass} flex min-h-32 flex-col justify-between p-5 sm:p-6`}
+            className={`${dashboardSurfaceClass} flex min-h-36 flex-col justify-between p-5 sm:p-6`}
           >
-            <p className="text-sm font-medium text-gray-600">{card.label}</p>
-            <p className="mt-4 text-3xl font-semibold tracking-tight text-gray-950">{card.value}</p>
-            <p className="mt-2 text-xs uppercase tracking-[0.18em] text-gray-400">Saved run data</p>
+            <div className="space-y-3">
+              <p className="text-sm font-medium text-gray-600">{card.label}</p>
+              <p className="text-3xl font-semibold tracking-tight text-gray-950">{card.value}</p>
+            </div>
+            <p className="mt-5 text-xs font-medium uppercase tracking-[0.18em] text-gray-400">
+              Saved run data
+            </p>
           </article>
         ))}
       </div>
