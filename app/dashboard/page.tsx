@@ -40,7 +40,7 @@ export default async function DashboardPage() {
   const runs: DashboardRun[] = data ?? []
 
   return (
-    <div className="space-y-8 lg:space-y-10">
+    <div className="space-y-10 lg:space-y-12">
       <PageHeader
         eyebrow="ExtractMetrics"
         title="Dashboard"
@@ -63,7 +63,7 @@ export default async function DashboardPage() {
         </div>
       ) : null}
 
-      <div className="space-y-8 lg:space-y-10">
+      <div className="space-y-10 lg:space-y-12">
         <DashboardAnalytics runs={runs} />
       </div>
     </div>
