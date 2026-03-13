@@ -1,16 +1,19 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import { CostTrendChart } from './cost-trend-chart'
 import {
   DashboardDateFilter,
   type DashboardDateFilterValue,
 } from './dashboard-date-filter'
 import { GrowerPerformanceTable } from './grower-performance-table'
+import { OutputByStrainChart } from './output-by-strain-chart'
 import { OutputTypePerformanceTable } from './output-type-performance-table'
 import { PerformanceInsights } from './performance-insights'
 import { RecentRunsTable } from './recent-runs-table'
 import { StrainPerformanceTable } from './strain-performance-table'
 import { SummaryMetrics } from './summary-metrics'
+import { YieldTrendChart } from './yield-trend-chart'
 import { getCostPerGram, getYieldPercent } from './analytics-metrics'
 
 type DashboardAnalyticsRun = {
@@ -104,7 +107,7 @@ export function DashboardAnalytics({ runs }: DashboardAnalyticsProps) {
       : 'No runs match the selected date range.'
 
   return (
-    <div className="space-y-8 lg:space-y-10">
+    <div className="space-y-10 xl:space-y-12">
       <DashboardDateFilter value={dateFilter} onChange={setDateFilter} />
       <SummaryMetrics
         totalRuns={totalRuns}
@@ -112,9 +115,16 @@ export function DashboardAnalytics({ runs }: DashboardAnalyticsProps) {
         averageCostPerGram={averageCostPerGram}
         totalOutputWeight={totalOutputWeight}
       />
+      <div className="grid gap-6 xl:grid-cols-2">
+        <YieldTrendChart runs={filteredRuns} emptyMessage={emptyMessage} />
+        <CostTrendChart runs={filteredRuns} emptyMessage={emptyMessage} />
+      </div>
+      <OutputByStrainChart runs={filteredRuns} emptyMessage={emptyMessage} />
       <PerformanceInsights filteredRuns={filteredRuns} />
-      <StrainPerformanceTable runs={filteredRuns} emptyMessage={emptyMessage} />
-      <GrowerPerformanceTable runs={filteredRuns} emptyMessage={emptyMessage} />
+      <div className="grid gap-6 xl:grid-cols-2">
+        <StrainPerformanceTable runs={filteredRuns} emptyMessage={emptyMessage} />
+        <GrowerPerformanceTable runs={filteredRuns} emptyMessage={emptyMessage} />
+      </div>
       <OutputTypePerformanceTable runs={filteredRuns} emptyMessage={emptyMessage} />
       <RecentRunsTable runs={filteredRuns} emptyMessage={emptyMessage} />
     </div>
