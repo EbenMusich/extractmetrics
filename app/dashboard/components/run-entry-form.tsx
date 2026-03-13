@@ -70,9 +70,21 @@ function createInitialValues(): RunFormValues {
 }
 
 function mergeInitialValues(initialValues?: Partial<RunFormValues>): RunFormValues {
+  const defaults = createInitialValues()
+
   return {
-    ...createInitialValues(),
-    ...initialValues,
+    run_date: initialValues?.run_date ?? defaults.run_date,
+    output_type: initialValues?.output_type ?? defaults.output_type,
+    strain_name: initialValues?.strain_name ?? defaults.strain_name,
+    grower_name: initialValues?.grower_name ?? defaults.grower_name,
+    biomass_input_g: initialValues?.biomass_input_g ?? defaults.biomass_input_g,
+    output_weight_g: initialValues?.output_weight_g ?? defaults.output_weight_g,
+    labor_minutes: initialValues?.labor_minutes ?? defaults.labor_minutes,
+    labor_rate: initialValues?.labor_rate ?? defaults.labor_rate,
+    material_cost: initialValues?.material_cost ?? defaults.material_cost,
+    utility_cost: initialValues?.utility_cost ?? defaults.utility_cost,
+    other_cost: initialValues?.other_cost ?? defaults.other_cost,
+    notes: initialValues?.notes ?? defaults.notes,
   }
 }
 
