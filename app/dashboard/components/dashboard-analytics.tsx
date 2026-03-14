@@ -14,7 +14,13 @@ import { RecentRunsTable } from './recent-runs-table'
 import { StrainPerformanceTable } from './strain-performance-table'
 import { SummaryMetrics } from './summary-metrics'
 import { YieldTrendChart } from './yield-trend-chart'
-import { getCostPerGram, getTotalCost, getYieldPercent } from './analytics-metrics'
+import {
+  getCostPerGram,
+  getCostPerKgBiomass,
+  getOutputPerKgBiomass,
+  getTotalCost,
+  getYieldPercent,
+} from './analytics-metrics'
 
 type DashboardAnalyticsRun = {
   id: string
@@ -88,6 +94,12 @@ export function DashboardAnalytics({ runs }: DashboardAnalyticsProps) {
   const costsPerGram = filteredRuns
     .map(getCostPerGram)
     .filter((value): value is number => value !== null)
+  const costsPerKgBiomass = filteredRuns
+    .map(getCostPerKgBiomass)
+    .filter((value): value is number => value !== null)
+  const outputsPerKg = filteredRuns
+    .map(getOutputPerKgBiomass)
+    .filter((value): value is number => value !== null)
 
   const totalRuns = filteredRuns.length
   const totalOutputWeight = roundMetric(
@@ -102,6 +114,16 @@ export function DashboardAnalytics({ runs }: DashboardAnalyticsProps) {
     costsPerGram.length > 0
       ? roundMetric(costsPerGram.reduce((sum, value) => sum + value, 0) / costsPerGram.length)
       : 0
+  const averageCostPerKgBiomass =
+    costsPerKgBiomass.length > 0
+      ? roundMetric(
+          costsPerKgBiomass.reduce((sum, value) => sum + value, 0) / costsPerKgBiomass.length
+        )
+      : 0
+  const averageOutputPerKg =
+    outputsPerKg.length > 0
+      ? roundMetric(outputsPerKg.reduce((sum, value) => sum + value, 0) / outputsPerKg.length)
+      : 0
   const emptyMessage =
     runs.length === 0
       ? 'No runs yet. Add your first run to start tracking metrics.'
@@ -115,6 +137,8 @@ export function DashboardAnalytics({ runs }: DashboardAnalyticsProps) {
         totalCost={totalCost}
         averageYieldPercent={averageYieldPercent}
         averageCostPerGram={averageCostPerGram}
+        averageCostPerKgBiomass={averageCostPerKgBiomass}
+        averageOutputPerKg={averageOutputPerKg}
         totalOutputWeight={totalOutputWeight}
       />
       <div className="grid gap-6 xl:grid-cols-2">

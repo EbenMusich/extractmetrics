@@ -30,9 +30,9 @@ export const errorTextClass = 'text-sm text-red-600'
 export const tableWrapperClass = `${dashboardSurfaceClass} overflow-hidden`
 export const tableClass = 'min-w-full text-sm text-gray-700'
 export const tableHeadClass =
-  'border-b border-gray-200 bg-gray-50 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600'
+  'border-b border-gray-200 bg-gray-50/90 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-700'
 export const tableRowClass =
-  'border-b border-gray-100 transition-colors last:border-b-0 hover:bg-gray-50/60'
+  'border-b border-gray-100 transition-colors last:border-b-0 hover:bg-gray-50'
 export const tableEmptyCellClass = 'px-5 py-10 text-center text-sm text-gray-500'
 
 type PageHeaderProps = {

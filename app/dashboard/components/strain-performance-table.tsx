@@ -12,6 +12,7 @@ import {
   tableRowClass,
   tableWrapperClass,
 } from './dashboard-ui'
+import { formatGramsPerKg } from './run-table-formatters'
 
 type StrainPerformanceRun = PerformanceMetricRun
 
@@ -79,13 +80,14 @@ export function StrainPerformanceTable({
                 <th className="px-4 py-3 text-right sm:px-5">Runs</th>
                 <th className="px-4 py-3 text-right sm:px-5">Avg Yield</th>
                 <th className="px-4 py-3 text-right sm:px-5">Avg Cost / g</th>
+                <th className="px-4 py-3 text-right sm:px-5">Avg Output / kg</th>
                 <th className="px-4 py-3 text-right sm:px-5">Total Output</th>
               </tr>
             </thead>
             <tbody className="text-sm">
               {rows.length === 0 ? (
                 <tr>
-                  <td className="px-4 py-6 sm:px-5" colSpan={5}>
+                  <td className="px-4 py-6 sm:px-5" colSpan={6}>
                     <EmptyState compact title="No strain data yet" description={emptyMessage} />
                   </td>
                 </tr>
@@ -101,6 +103,9 @@ export function StrainPerformanceTable({
                     </td>
                     <td className="px-4 py-3 text-right tabular-nums text-gray-700 sm:px-5">
                       {formatCurrency(row.averageCostPerGram)}
+                    </td>
+                    <td className="px-4 py-3 text-right tabular-nums text-gray-700 sm:px-5">
+                      {formatGramsPerKg(row.averageOutputPerKg)}
                     </td>
                     <td className="px-4 py-3 text-right tabular-nums text-gray-700 sm:px-5">
                       {formatGrams(row.totalOutputG)}

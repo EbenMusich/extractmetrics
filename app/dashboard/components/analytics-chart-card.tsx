@@ -50,9 +50,11 @@ export function AnalyticsChartCard({
           <p className="max-w-2xl text-sm leading-6 text-gray-600">{description}</p>
         </div>
       </div>
-      <div className="px-3 pb-3 pt-4 sm:px-4 sm:pb-4 sm:pt-5">
+      <div className="px-4 pb-4 pt-4 sm:px-5 sm:pb-5 sm:pt-5">
         {hasData ? (
-          <div className="h-72 sm:h-80">{children}</div>
+          <div className="rounded-2xl bg-gray-50/60 p-2 sm:p-3">
+            <div className="h-72 sm:h-80">{children}</div>
+          </div>
         ) : (
           <EmptyState compact title={emptyTitle} description={emptyMessage} />
         )}

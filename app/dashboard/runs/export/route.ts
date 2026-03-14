@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import {
   getCostPerGram,
+  getCostPerKgBiomass,
+  getOutputPerKgBiomass,
   getTotalCost,
   getYieldPercent,
   type PerformanceMetricRun,
@@ -31,6 +33,8 @@ const CSV_HEADERS = [
   'Other Cost',
   'Total Cost',
   'Cost / g',
+  'Cost / kg Biomass',
+  'Output / kg Biomass',
   'Notes',
 ]
 
@@ -64,6 +68,8 @@ function buildCsv(run: ExportRun[]) {
   const dataRows = run.map((item) => {
     const yieldPercent = getYieldPercent(item)
     const costPerGram = getCostPerGram(item)
+    const costPerKgBiomass = getCostPerKgBiomass(item)
+    const outputPerKgBiomass = getOutputPerKgBiomass(item)
     const totalCost = getTotalCost(item)
 
     return buildCsvRow([
@@ -82,6 +88,8 @@ function buildCsv(run: ExportRun[]) {
       formatNumber(item.other_cost, 2),
       formatNumber(totalCost, 2),
       formatNumber(costPerGram, 2),
+      formatNumber(costPerKgBiomass, 2),
+      formatNumber(outputPerKgBiomass, 1),
       formatOptionalText(item.notes),
     ])
   })

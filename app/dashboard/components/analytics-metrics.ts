@@ -20,6 +20,8 @@ export type AggregatedPerformanceMetric = {
   totalOutputG: number
   averageYieldPercent: number | null
   averageCostPerGram: number | null
+  averageCostPerKgBiomass: number | null
+  averageOutputPerKg: number | null
 }
 
 type MutableAggregatedPerformanceMetric = {
@@ -30,6 +32,10 @@ type MutableAggregatedPerformanceMetric = {
   yieldCount: number
   costPerGramSum: number
   costPerGramCount: number
+  costPerKgBiomassSum: number
+  costPerKgBiomassCount: number
+  outputPerKgSum: number
+  outputPerKgCount: number
 }
 
 function coerceNumber(value: number | null | undefined) {
@@ -39,6 +45,16 @@ function coerceNumber(value: number | null | undefined) {
 function getMetricLabel(value: string | null | undefined) {
   const normalizedValue = value?.trim()
   return normalizedValue ? normalizedValue : 'Unspecified'
+}
+
+function getBiomassInputKg(run: PerformanceMetricRun) {
+  const biomassInputG = coerceNumber(run.biomass_input_g)
+
+  if (biomassInputG === null || biomassInputG <= 0) {
+    return null
+  }
+
+  return biomassInputG / 1000
 }
 
 export function getLaborCost(run: PerformanceMetricRun) {
@@ -78,6 +94,27 @@ export function getCostPerGram(run: PerformanceMetricRun) {
   return getTotalCost(run) / outputWeightG
 }
 
+export function getCostPerKgBiomass(run: PerformanceMetricRun) {
+  const biomassInputKg = getBiomassInputKg(run)
+
+  if (biomassInputKg === null) {
+    return null
+  }
+
+  return getTotalCost(run) / biomassInputKg
+}
+
+export function getOutputPerKgBiomass(run: PerformanceMetricRun) {
+  const biomassInputKg = getBiomassInputKg(run)
+  const outputWeightG = coerceNumber(run.output_weight_g)
+
+  if (biomassInputKg === null || outputWeightG === null) {
+    return null
+  }
+
+  return outputWeightG / biomassInputKg
+}
+
 export function getTotalCost(run: PerformanceMetricRun) {
   return (
     getLaborCost(run) +
@@ -106,6 +143,10 @@ export function aggregatePerformanceMetrics(
         yieldCount: 0,
         costPerGramSum: 0,
         costPerGramCount: 0,
+        costPerKgBiomassSum: 0,
+        costPerKgBiomassCount: 0,
+        outputPerKgSum: 0,
+        outputPerKgCount: 0,
       }
 
     aggregate.runCount += 1
@@ -123,6 +164,18 @@ export function aggregatePerformanceMetrics(
       aggregate.costPerGramCount += 1
     }
 
+    const costPerKgBiomass = getCostPerKgBiomass(run)
+    if (costPerKgBiomass !== null) {
+      aggregate.costPerKgBiomassSum += costPerKgBiomass
+      aggregate.costPerKgBiomassCount += 1
+    }
+
+    const outputPerKg = getOutputPerKgBiomass(run)
+    if (outputPerKg !== null) {
+      aggregate.outputPerKgSum += outputPerKg
+      aggregate.outputPerKgCount += 1
+    }
+
     aggregateMap.set(label, aggregate)
   }
 
@@ -137,6 +190,12 @@ export function aggregatePerformanceMetrics(
         aggregate.costPerGramCount > 0
           ? aggregate.costPerGramSum / aggregate.costPerGramCount
           : null,
+      averageCostPerKgBiomass:
+        aggregate.costPerKgBiomassCount > 0
+          ? aggregate.costPerKgBiomassSum / aggregate.costPerKgBiomassCount
+          : null,
+      averageOutputPerKg:
+        aggregate.outputPerKgCount > 0 ? aggregate.outputPerKgSum / aggregate.outputPerKgCount : null,
     }))
     .sort((left, right) => {
       if (right.totalOutputG !== left.totalOutputG) {

@@ -14,8 +14,8 @@ const currencyFormatter = new Intl.NumberFormat('en-US', {
 })
 
 export const numericCellClass =
-  'whitespace-nowrap px-4 py-3 text-right text-sm tabular-nums text-gray-700 sm:px-5'
-export const textCellClass = 'whitespace-nowrap px-4 py-3 text-sm text-gray-700 sm:px-5'
+  'whitespace-nowrap px-4 py-3.5 text-right text-sm tabular-nums text-gray-700 sm:px-5'
+export const textCellClass = 'whitespace-nowrap px-4 py-3.5 text-sm text-gray-700 sm:px-5'
 
 function coerceNumber(value: number | null | undefined) {
   return typeof value === 'number' && Number.isFinite(value) ? value : null
@@ -28,6 +28,15 @@ export function formatGrams(value: number | null | undefined) {
   }
 
   return `${normalizedValue.toFixed(1)} g`
+}
+
+export function formatGramsPerKg(value: number | null | undefined) {
+  const normalizedValue = coerceNumber(value)
+  if (normalizedValue === null) {
+    return '-'
+  }
+
+  return `${normalizedValue.toFixed(1)} g/kg`
 }
 
 export function formatPercent(value: number | null | undefined) {
