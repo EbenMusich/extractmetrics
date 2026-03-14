@@ -73,7 +73,15 @@ export function getLaborCost(run: PerformanceMetricRun) {
   return (laborMinutes / 60) * laborRate
 }
 
-export function getYieldPercent(run: PerformanceMetricRun) {
+export function getYieldPercent(outputWeightG: number, biomassInputG: number) {
+  if (biomassInputG <= 0) {
+    return 0
+  }
+
+  return (outputWeightG / biomassInputG) * 100
+}
+
+export function getRunYieldPercent(run: PerformanceMetricRun) {
   const biomassInputG = coerceNumber(run.biomass_input_g)
   const outputWeightG = coerceNumber(run.output_weight_g)
 
@@ -81,7 +89,7 @@ export function getYieldPercent(run: PerformanceMetricRun) {
     return null
   }
 
-  return (outputWeightG / biomassInputG) * 100
+  return getYieldPercent(outputWeightG, biomassInputG)
 }
 
 export function getCostPerGram(run: PerformanceMetricRun) {
@@ -152,7 +160,7 @@ export function aggregatePerformanceMetrics(
     aggregate.runCount += 1
     aggregate.totalOutputG += coerceNumber(run.output_weight_g) ?? 0
 
-    const yieldPercent = getYieldPercent(run)
+    const yieldPercent = getRunYieldPercent(run)
     if (yieldPercent !== null) {
       aggregate.yieldSum += yieldPercent
       aggregate.yieldCount += 1

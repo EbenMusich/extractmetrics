@@ -80,7 +80,14 @@ export function formatText(value: string | null | undefined) {
 }
 
 export function getFormattedYieldPercent(run: RunTableRun) {
-  return formatPercent(getYieldPercent(run))
+  const biomassInputG = coerceNumber(run.biomass_input_g)
+  const outputWeightG = coerceNumber(run.output_weight_g)
+
+  if (biomassInputG === null || outputWeightG === null) {
+    return '-'
+  }
+
+  return formatPercent(getYieldPercent(outputWeightG, biomassInputG))
 }
 
 export function getFormattedCostPerGram(run: RunTableRun) {

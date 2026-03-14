@@ -18,8 +18,8 @@ import {
   getCostPerGram,
   getCostPerKgBiomass,
   getOutputPerKgBiomass,
+  getRunYieldPercent,
   getTotalCost,
-  getYieldPercent,
 } from './analytics-metrics'
 
 type DashboardAnalyticsRun = {
@@ -70,7 +70,7 @@ function getCutoffDate(filter: DashboardDateFilterValue) {
   }
 
   const cutoff = getStartOfToday()
-  cutoff.setDate(cutoff.getDate() - (filter === '7d' ? 7 : 30))
+  cutoff.setDate(cutoff.getDate() - (filter === '30d' ? 30 : 90))
   return cutoff
 }
 
@@ -90,7 +90,7 @@ export function DashboardAnalytics({ runs }: DashboardAnalyticsProps) {
     })
   }, [dateFilter, runs])
 
-  const yields = filteredRuns.map(getYieldPercent).filter((value): value is number => value !== null)
+  const yields = filteredRuns.map(getRunYieldPercent).filter((value): value is number => value !== null)
   const costsPerGram = filteredRuns
     .map(getCostPerGram)
     .filter((value): value is number => value !== null)

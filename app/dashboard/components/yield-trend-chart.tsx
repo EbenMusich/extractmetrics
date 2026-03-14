@@ -10,7 +10,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { getYieldPercent } from './analytics-metrics'
+import { getRunYieldPercent } from './analytics-metrics'
 import { AnalyticsChartCard, analyticsChartTheme } from './analytics-chart-card'
 import { formatDate, type RunTableRun } from './run-table-formatters'
 
@@ -51,7 +51,7 @@ export function YieldTrendChart({ runs, emptyMessage }: YieldTrendChartProps) {
     return [...runs]
       .sort(sortRunsByDate)
       .map((run) => {
-        const yieldPercent = getYieldPercent(run)
+        const yieldPercent = getRunYieldPercent(run)
 
         if (yieldPercent === null) {
           return null

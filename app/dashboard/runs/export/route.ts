@@ -3,8 +3,8 @@ import {
   getCostPerGram,
   getCostPerKgBiomass,
   getOutputPerKgBiomass,
+  getRunYieldPercent,
   getTotalCost,
-  getYieldPercent,
   type PerformanceMetricRun,
 } from '@/app/dashboard/components/analytics-metrics'
 import { filterRunsBySearchTerm, normalizeRunHistorySearchTerm } from '@/app/dashboard/components/run-history-filter'
@@ -66,7 +66,7 @@ function buildCsvRow(values: string[]) {
 function buildCsv(run: ExportRun[]) {
   const headerRow = buildCsvRow(CSV_HEADERS)
   const dataRows = run.map((item) => {
-    const yieldPercent = getYieldPercent(item)
+    const yieldPercent = getRunYieldPercent(item)
     const costPerGram = getCostPerGram(item)
     const costPerKgBiomass = getCostPerKgBiomass(item)
     const outputPerKgBiomass = getOutputPerKgBiomass(item)

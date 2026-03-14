@@ -3,7 +3,7 @@ import {
   SectionHeader,
 } from './dashboard-ui'
 
-type DashboardDateFilterValue = '7d' | '30d' | 'all'
+type DashboardDateFilterValue = '30d' | '90d' | 'all'
 
 type DashboardDateFilterProps = {
   value: DashboardDateFilterValue
@@ -11,8 +11,8 @@ type DashboardDateFilterProps = {
 }
 
 const options: Array<{ value: DashboardDateFilterValue; label: string }> = [
-  { value: '7d', label: 'Last 7 days' },
   { value: '30d', label: 'Last 30 days' },
+  { value: '90d', label: 'Last 90 days' },
   { value: 'all', label: 'All time' },
 ]
 
@@ -40,7 +40,7 @@ export function DashboardDateFilter({
                   aria-pressed={isActive}
                   className={`rounded-xl border px-3.5 py-2 text-sm font-medium transition ${
                     isActive
-                      ? 'border-gray-300 bg-white text-gray-950 shadow-sm'
+                      ? 'border-gray-900/10 bg-white text-gray-950 shadow-sm ring-1 ring-gray-900/5'
                       : 'border-transparent text-gray-600 hover:border-gray-200 hover:bg-white hover:text-gray-900'
                   }`}
                 >
