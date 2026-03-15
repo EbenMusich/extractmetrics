@@ -41,7 +41,7 @@ export function SummaryMetrics({
   const cards: SummaryCard[] = [
     {
       label: 'Total runs',
-      value: totalRuns.toString(),
+      value: numberFormatter.format(totalRuns),
       eyebrow: 'Volume',
     },
     {
@@ -78,7 +78,7 @@ export function SummaryMetrics({
 
   return (
     <section className="space-y-5">
-      <SectionHeader title="Summary" description="Quick stats from your saved extraction runs." />
+      <SectionHeader title="Summary" description="Quick stats from your selected extraction runs." />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
         {cards.map((card) => (
