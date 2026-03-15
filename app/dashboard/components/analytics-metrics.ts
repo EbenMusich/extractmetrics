@@ -24,6 +24,16 @@ export type AggregatedPerformanceMetric = {
   averageOutputPerKg: number | null
 }
 
+export type CostBreakdownDatum = {
+  name: string
+  value: number
+}
+
+export type YieldByStrainDatum = {
+  name: string
+  value: number
+}
+
 type MutableAggregatedPerformanceMetric = {
   label: string
   runCount: number
@@ -45,6 +55,11 @@ function coerceNumber(value: number | null | undefined) {
 function getMetricLabel(value: string | null | undefined) {
   const normalizedValue = value?.trim()
   return normalizedValue ? normalizedValue : 'Unspecified'
+}
+
+function getStrainChartLabel(value: string | null | undefined) {
+  const normalizedValue = value?.trim()
+  return normalizedValue ? normalizedValue : 'Unknown'
 }
 
 function getBiomassInputKg(run: PerformanceMetricRun) {
@@ -130,6 +145,90 @@ export function getTotalCost(run: PerformanceMetricRun) {
     (coerceNumber(run.utility_cost) ?? 0) +
     (coerceNumber(run.other_cost) ?? 0)
   )
+}
+
+export function getCostBreakdownData(runs: PerformanceMetricRun[]): CostBreakdownDatum[] {
+  const totals = runs.reduce(
+    (aggregate, run) => {
+      aggregate.material += coerceNumber(run.material_cost) ?? 0
+      aggregate.labor += coerceNumber(run.labor_cost) ?? 0
+      aggregate.utility += coerceNumber(run.utility_cost) ?? 0
+      aggregate.other += coerceNumber(run.other_cost) ?? 0
+      return aggregate
+    },
+    {
+      material: 0,
+      labor: 0,
+      utility: 0,
+      other: 0,
+    }
+  )
+
+  return [
+    { name: 'Material', value: Number(totals.material.toFixed(2)) },
+    { name: 'Labor', value: Number(totals.labor.toFixed(2)) },
+    { name: 'Utility', value: Number(totals.utility.toFixed(2)) },
+    { name: 'Other', value: Number(totals.other.toFixed(2)) },
+  ]
+}
+
+export function getYieldByStrainData(
+  runs: PerformanceMetricRun[],
+  limit = 8
+): YieldByStrainDatum[] {
+  const aggregateMap = new Map<
+    string,
+    {
+      name: string
+      totalOutputG: number
+      totalBiomassG: number
+    }
+  >()
+
+  for (const run of runs) {
+    const biomassInputG = coerceNumber(run.biomass_input_g)
+    const outputWeightG = coerceNumber(run.output_weight_g)
+
+    if (biomassInputG === null || biomassInputG <= 0 || outputWeightG === null || outputWeightG < 0) {
+      continue
+    }
+
+    const name = getStrainChartLabel(run.strain_name)
+    const existingAggregate = aggregateMap.get(name)
+    const aggregate =
+      existingAggregate ??
+      {
+        name,
+        totalOutputG: 0,
+        totalBiomassG: 0,
+      }
+
+    aggregate.totalOutputG += outputWeightG
+    aggregate.totalBiomassG += biomassInputG
+
+    aggregateMap.set(name, aggregate)
+  }
+
+  return Array.from(aggregateMap.values())
+    .sort((left, right) => {
+      const leftYield = getYieldPercent(left.totalOutputG, left.totalBiomassG)
+      const rightYield = getYieldPercent(right.totalOutputG, right.totalBiomassG)
+
+      if (rightYield !== leftYield) {
+        return rightYield - leftYield
+      }
+
+      if (right.totalBiomassG !== left.totalBiomassG) {
+        return right.totalBiomassG - left.totalBiomassG
+      }
+
+      return left.name.localeCompare(right.name)
+    })
+    .slice(0, limit)
+    .map(({ name, totalOutputG, totalBiomassG }) => ({
+      name,
+      value: Number(getYieldPercent(totalOutputG, totalBiomassG).toFixed(2)),
+    }))
 }
 
 export function aggregatePerformanceMetrics(
