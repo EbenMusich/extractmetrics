@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import { CostBreakdownChart } from './cost-breakdown-chart'
 import { CostTrendChart } from './cost-trend-chart'
 import {
   DashboardFilterBar,
@@ -15,6 +16,7 @@ import { PerformanceInsights } from './performance-insights'
 import { RecentRunsTable } from './recent-runs-table'
 import { StrainPerformanceTable } from './strain-performance-table'
 import { SummaryMetrics } from './summary-metrics'
+import { YieldByStrainChart } from './yield-by-strain-chart'
 import { YieldTrendChart } from './yield-trend-chart'
 import {
   getCostPerGram,
@@ -216,7 +218,13 @@ export function DashboardAnalytics({ runs }: DashboardAnalyticsProps) {
         <YieldTrendChart runs={filteredRuns} emptyMessage={emptyMessage} />
         <CostTrendChart runs={filteredRuns} emptyMessage={emptyMessage} />
       </div>
-      <OutputByStrainChart runs={filteredRuns} emptyMessage={emptyMessage} />
+      <div className="grid gap-6 xl:grid-cols-2">
+        <OutputByStrainChart runs={filteredRuns} emptyMessage={emptyMessage} />
+        <CostBreakdownChart runs={filteredRuns} emptyMessage={emptyMessage} />
+      </div>
+      <div className="grid gap-6">
+        <YieldByStrainChart runs={filteredRuns} emptyMessage={emptyMessage} />
+      </div>
       <PerformanceInsights filteredRuns={filteredRuns} />
       <div className="grid gap-6 xl:grid-cols-2">
         <StrainPerformanceTable runs={filteredRuns} emptyMessage={emptyMessage} />
