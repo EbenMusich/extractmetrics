@@ -3,9 +3,11 @@
 import { useMemo, useState } from 'react'
 import { CostTrendChart } from './cost-trend-chart'
 import {
-  DashboardDateFilter,
-  type DashboardDateFilterValue,
-} from './dashboard-date-filter'
+  DashboardFilterBar,
+  defaultDashboardFilters,
+  getDashboardDateRangeLabel,
+  type DashboardFilterState,
+} from './dashboard-filter-bar'
 import { GrowerPerformanceTable } from './grower-performance-table'
 import { OutputByStrainChart } from './output-by-strain-chart'
 import { OutputTypePerformanceTable } from './output-type-performance-table'
@@ -21,6 +23,7 @@ import {
   getRunYieldPercent,
   getTotalCost,
 } from './analytics-metrics'
+import { EmptyState } from './dashboard-ui'
 
 type DashboardAnalyticsRun = {
   id: string
@@ -64,31 +67,77 @@ function getStartOfToday() {
   return new Date(today.getFullYear(), today.getMonth(), today.getDate())
 }
 
-function getCutoffDate(filter: DashboardDateFilterValue) {
+function normalizeFilterValue(value: string | null | undefined) {
+  return value?.trim() ?? ''
+}
+
+function getFilterOptions(
+  runs: DashboardAnalyticsRun[],
+  key: 'strain_name' | 'grower_name' | 'output_type'
+) {
+  const options = new Set<string>()
+
+  for (const run of runs) {
+    const value = normalizeFilterValue(run[key])
+    if (value) {
+      options.add(value)
+    }
+  }
+
+  return Array.from(options).sort((left, right) => left.localeCompare(right))
+}
+
+function matchesFilter(value: string | null | undefined, filterValue: string) {
+  return !filterValue || normalizeFilterValue(value) === filterValue
+}
+
+function getCutoffDate(filter: DashboardFilterState['dateRange']) {
   if (filter === 'all') {
     return null
   }
 
   const cutoff = getStartOfToday()
-  cutoff.setDate(cutoff.getDate() - (filter === '30d' ? 30 : 90))
+  const days = filter === '7d' ? 7 : filter === '30d' ? 30 : 90
+  cutoff.setDate(cutoff.getDate() - (days - 1))
   return cutoff
 }
 
 export function DashboardAnalytics({ runs }: DashboardAnalyticsProps) {
-  const [dateFilter, setDateFilter] = useState<DashboardDateFilterValue>('all')
+  const [filters, setFilters] = useState<DashboardFilterState>(defaultDashboardFilters)
+
+  const filterOptions = useMemo(
+    () => ({
+      strain: getFilterOptions(runs, 'strain_name'),
+      grower: getFilterOptions(runs, 'grower_name'),
+      outputType: getFilterOptions(runs, 'output_type'),
+    }),
+    [runs]
+  )
 
   const filteredRuns = useMemo(() => {
-    const cutoffDate = getCutoffDate(dateFilter)
-
-    if (!cutoffDate) {
-      return runs
-    }
+    const cutoffDate = getCutoffDate(filters.dateRange)
 
     return runs.filter((run) => {
+      if (!matchesFilter(run.strain_name, filters.strain)) {
+        return false
+      }
+
+      if (!matchesFilter(run.grower_name, filters.grower)) {
+        return false
+      }
+
+      if (!matchesFilter(run.output_type, filters.outputType)) {
+        return false
+      }
+
+      if (!cutoffDate) {
+        return true
+      }
+
       const runDate = parseRunDate(run.run_date)
       return runDate ? runDate >= cutoffDate : true
     })
-  }, [dateFilter, runs])
+  }, [filters, runs])
 
   const yields = filteredRuns.map(getRunYieldPercent).filter((value): value is number => value !== null)
   const costsPerGram = filteredRuns
@@ -124,14 +173,35 @@ export function DashboardAnalytics({ runs }: DashboardAnalyticsProps) {
     outputsPerKg.length > 0
       ? roundMetric(outputsPerKg.reduce((sum, value) => sum + value, 0) / outputsPerKg.length)
       : 0
+  const activeFilterLabels = [
+    filters.dateRange !== 'all' ? getDashboardDateRangeLabel(filters.dateRange) : null,
+    filters.strain ? `Strain: ${filters.strain}` : null,
+    filters.grower ? `Grower: ${filters.grower}` : null,
+    filters.outputType ? `Output type: ${filters.outputType}` : null,
+  ].filter((value): value is string => Boolean(value))
+  const selectionLabel = activeFilterLabels.length > 0 ? activeFilterLabels.join(' | ') : 'All saved runs'
   const emptyMessage =
     runs.length === 0
       ? 'No runs yet. Add your first run to start tracking metrics.'
-      : 'No runs match the selected date range.'
+      : 'No runs match the selected filters. Try widening the date range or choosing All in a dropdown.'
 
   return (
     <div className="space-y-10 xl:space-y-12">
-      <DashboardDateFilter value={dateFilter} onChange={setDateFilter} />
+      <DashboardFilterBar
+        value={filters}
+        onChange={setFilters}
+        strainOptions={filterOptions.strain}
+        growerOptions={filterOptions.grower}
+        outputTypeOptions={filterOptions.outputType}
+        totalRunCount={runs.length}
+        filteredRunCount={filteredRuns.length}
+      />
+      {runs.length > 0 && filteredRuns.length === 0 ? (
+        <EmptyState
+          title="No runs match these filters"
+          description="Try widening the date range or setting one of the dropdowns back to All."
+        />
+      ) : null}
       <SummaryMetrics
         totalRuns={totalRuns}
         totalCost={totalCost}
@@ -140,6 +210,7 @@ export function DashboardAnalytics({ runs }: DashboardAnalyticsProps) {
         averageCostPerKgBiomass={averageCostPerKgBiomass}
         averageOutputPerKg={averageOutputPerKg}
         totalOutputWeight={totalOutputWeight}
+        selectionLabel={selectionLabel}
       />
       <div className="grid gap-6 xl:grid-cols-2">
         <YieldTrendChart runs={filteredRuns} emptyMessage={emptyMessage} />

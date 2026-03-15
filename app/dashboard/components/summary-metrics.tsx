@@ -8,6 +8,7 @@ type SummaryMetricsProps = {
   averageCostPerKgBiomass: number
   averageOutputPerKg: number
   totalOutputWeight: number
+  selectionLabel: string
 }
 
 type SummaryCard = {
@@ -35,6 +36,7 @@ export function SummaryMetrics({
   averageCostPerKgBiomass,
   averageOutputPerKg,
   totalOutputWeight,
+  selectionLabel,
 }: SummaryMetricsProps) {
   const cards: SummaryCard[] = [
     {
@@ -97,9 +99,12 @@ export function SummaryMetrics({
                 </p>
               </div>
             </div>
-            <p className="text-xs font-medium uppercase tracking-[0.18em] text-gray-400">
-              Selected date range
-            </p>
+            <div className="space-y-1">
+              <p className="text-xs font-medium uppercase tracking-[0.18em] text-gray-400">
+                Filters applied
+              </p>
+              <p className="text-xs text-gray-500">{selectionLabel}</p>
+            </div>
           </article>
         ))}
       </div>
