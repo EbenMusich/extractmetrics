@@ -36,6 +36,7 @@ export type RunFormValues = {
   grower_name: string
   biomass_input_g: string
   output_weight_g: string
+  solvent_used_g: string
   labor_minutes: string
   labor_rate: string
   material_cost: string
@@ -60,6 +61,7 @@ function createInitialValues(): RunFormValues {
     grower_name: '',
     biomass_input_g: '',
     output_weight_g: '',
+    solvent_used_g: '',
     labor_minutes: '0',
     labor_rate: '0',
     material_cost: '',
@@ -79,6 +81,7 @@ function mergeInitialValues(initialValues?: Partial<RunFormValues>): RunFormValu
     grower_name: initialValues?.grower_name ?? defaults.grower_name,
     biomass_input_g: initialValues?.biomass_input_g ?? defaults.biomass_input_g,
     output_weight_g: initialValues?.output_weight_g ?? defaults.output_weight_g,
+    solvent_used_g: initialValues?.solvent_used_g ?? defaults.solvent_used_g,
     labor_minutes: initialValues?.labor_minutes ?? defaults.labor_minutes,
     labor_rate: initialValues?.labor_rate ?? defaults.labor_rate,
     material_cost: initialValues?.material_cost ?? defaults.material_cost,
@@ -92,6 +95,7 @@ function validateForm(values: RunFormValues): RunFormFieldErrors {
   const errors: RunFormFieldErrors = {}
   const biomassInput = Number(values.biomass_input_g)
   const outputWeight = Number(values.output_weight_g)
+  const solventUsed = Number(values.solvent_used_g)
   const laborMinutes = Number(values.labor_minutes)
   const laborRate = Number(values.labor_rate)
   const materialCost = Number(values.material_cost)
@@ -121,6 +125,10 @@ function validateForm(values: RunFormValues): RunFormFieldErrors {
     errors.output_weight_g = 'Output weight is required.'
   } else if (!Number.isFinite(outputWeight) || outputWeight <= 0) {
     errors.output_weight_g = 'Output weight must be greater than 0.'
+  }
+
+  if (values.solvent_used_g.trim() && (!Number.isFinite(solventUsed) || solventUsed < 0)) {
+    errors.solvent_used_g = 'Solvent used must be 0 or greater.'
   }
 
   if (!values.labor_minutes.trim()) {
@@ -388,7 +396,7 @@ export function RunEntryForm({
           </FieldShell>
 
           <FieldShell
-            label="Output (g)"
+            label="Output Weight (g)"
             error={fieldErrors.output_weight_g}
             helper={outputWeightWarning}
           >
@@ -401,6 +409,23 @@ export function RunEntryForm({
               onChange={(event) => handleChange('output_weight_g', event.target.value)}
               required
               aria-invalid={Boolean(fieldErrors.output_weight_g)}
+              className={inputClass}
+            />
+          </FieldShell>
+
+          <FieldShell
+            label="Solvent Used (g)"
+            error={fieldErrors.solvent_used_g}
+            helper="Optional. Leave blank if this run did not track solvent use."
+          >
+            <input
+              name="solvent_used_g"
+              type="number"
+              step="0.01"
+              min="0"
+              value={values.solvent_used_g}
+              onChange={(event) => handleChange('solvent_used_g', event.target.value)}
+              aria-invalid={Boolean(fieldErrors.solvent_used_g)}
               className={inputClass}
             />
           </FieldShell>

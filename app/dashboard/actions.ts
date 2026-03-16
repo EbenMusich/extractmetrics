@@ -16,6 +16,7 @@ export type CreateRunFormState = {
       | 'grower_name'
       | 'biomass_input_g'
       | 'output_weight_g'
+      | 'solvent_used_g'
       | 'labor_minutes'
       | 'labor_rate'
       | 'material_cost'
@@ -40,6 +41,7 @@ type RunFormValues = {
   growerName: string
   biomassInputG: number | null
   outputWeightG: number | null
+  solventUsedG: number | null
   laborMinutes: number | null
   laborRate: number | null
   laborCost: number
@@ -111,6 +113,7 @@ function validateRunForm(formData: FormData) {
     notes: readText(formData, 'notes'),
     biomassInputG: readNumber(formData, 'biomass_input_g'),
     outputWeightG: readNumber(formData, 'output_weight_g'),
+    solventUsedG: readNumber(formData, 'solvent_used_g'),
     laborMinutes: readNumber(formData, 'labor_minutes'),
     laborRate: readNumber(formData, 'labor_rate'),
     laborCost: 0,
@@ -144,6 +147,13 @@ function validateRunForm(formData: FormData) {
     fieldErrors.output_weight_g = 'Output weight is required.'
   } else if (!Number.isFinite(values.outputWeightG) || values.outputWeightG <= 0) {
     fieldErrors.output_weight_g = 'Output weight must be greater than 0.'
+  }
+
+  if (
+    values.solventUsedG !== null &&
+    (!Number.isFinite(values.solventUsedG) || values.solventUsedG < 0)
+  ) {
+    fieldErrors.solvent_used_g = 'Solvent used must be 0 or greater.'
   }
 
   if (values.laborMinutes === null) {
@@ -195,6 +205,7 @@ function buildRunPayload(userId: string, values: RunFormValues) {
     grower_name: values.growerName,
     biomass_input_g: values.biomassInputG,
     output_weight_g: values.outputWeightG,
+    solvent_used_g: values.solventUsedG,
     labor_minutes: values.laborMinutes,
     labor_rate: values.laborRate,
     labor_cost: values.laborCost,
