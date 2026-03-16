@@ -40,10 +40,14 @@ export function CostBreakdownChart({
       isLoading={isLoading}
     >
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} margin={{ top: 8, right: 18, left: 4, bottom: 8 }}>
+        <BarChart
+          data={data}
+          margin={{ ...analyticsChartTheme.chartMargin, left: 4, bottom: 8 }}
+          barCategoryGap={18}
+        >
           <CartesianGrid
             stroke={analyticsChartTheme.gridStroke}
-            strokeDasharray="3 3"
+            strokeDasharray={analyticsChartTheme.gridDasharray}
             vertical={false}
           />
           <XAxis
@@ -51,14 +55,14 @@ export function CostBreakdownChart({
             tick={analyticsChartTheme.axisTick}
             tickLine={false}
             axisLine={false}
-            tickMargin={10}
+            tickMargin={12}
           />
           <YAxis
             tickFormatter={formatCurrency}
             tick={analyticsChartTheme.axisTick}
             tickLine={false}
             axisLine={false}
-            tickMargin={10}
+            tickMargin={12}
             width={86}
           />
           <Tooltip
@@ -67,13 +71,14 @@ export function CostBreakdownChart({
             contentStyle={analyticsChartTheme.tooltipContentStyle}
             labelStyle={analyticsChartTheme.tooltipLabelStyle}
             itemStyle={analyticsChartTheme.tooltipItemStyle}
-            cursor={{ fill: 'rgba(148, 163, 184, 0.10)' }}
+            wrapperStyle={analyticsChartTheme.tooltipWrapperStyle}
+            cursor={{ fill: analyticsChartTheme.cursorFill }}
           />
           <Bar
             dataKey="value"
             name="Total cost"
             fill="#7c3aed"
-            radius={[12, 12, 0, 0]}
+            radius={[10, 10, 0, 0]}
             maxBarSize={56}
           />
         </BarChart>

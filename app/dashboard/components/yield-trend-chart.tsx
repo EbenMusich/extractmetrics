@@ -80,10 +80,10 @@ export function YieldTrendChart({
       isLoading={isLoading}
     >
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data} margin={{ top: 8, right: 18, left: 4, bottom: 0 }}>
+        <LineChart data={data} margin={analyticsChartTheme.chartMargin}>
           <CartesianGrid
             stroke={analyticsChartTheme.gridStroke}
-            strokeDasharray="3 3"
+            strokeDasharray={analyticsChartTheme.gridDasharray}
             vertical={false}
           />
           <XAxis
@@ -92,7 +92,7 @@ export function YieldTrendChart({
             tick={analyticsChartTheme.axisTick}
             tickLine={false}
             axisLine={false}
-            tickMargin={10}
+            tickMargin={12}
             minTickGap={24}
           />
           <YAxis
@@ -100,7 +100,7 @@ export function YieldTrendChart({
             tick={analyticsChartTheme.axisTick}
             tickLine={false}
             axisLine={false}
-            tickMargin={10}
+            tickMargin={12}
             width={64}
           />
           <Tooltip
@@ -109,15 +109,18 @@ export function YieldTrendChart({
             contentStyle={analyticsChartTheme.tooltipContentStyle}
             labelStyle={analyticsChartTheme.tooltipLabelStyle}
             itemStyle={analyticsChartTheme.tooltipItemStyle}
-            cursor={{ stroke: '#cbd5e1', strokeDasharray: '4 4' }}
+            wrapperStyle={analyticsChartTheme.tooltipWrapperStyle}
+            cursor={{ stroke: analyticsChartTheme.cursorStroke, strokeDasharray: analyticsChartTheme.gridDasharray }}
           />
           <Line
             type="monotone"
             dataKey="value"
             name="Yield"
             stroke="#4f46e5"
-            strokeWidth={2.5}
-            dot={{ r: 3.5, strokeWidth: 2, fill: '#ffffff' }}
+            strokeWidth={analyticsChartTheme.lineStrokeWidth}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            dot={{ r: 3, strokeWidth: 2, fill: '#ffffff' }}
             activeDot={{ r: 5, fill: '#4f46e5', stroke: '#ffffff', strokeWidth: 2 }}
           />
         </LineChart>

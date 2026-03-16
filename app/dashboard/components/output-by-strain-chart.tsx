@@ -56,10 +56,14 @@ export function OutputByStrainChart({
       isLoading={isLoading}
     >
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} margin={{ top: 8, right: 18, left: 4, bottom: 8 }}>
+        <BarChart
+          data={data}
+          margin={{ ...analyticsChartTheme.chartMargin, left: 4, bottom: 8 }}
+          barCategoryGap={18}
+        >
           <CartesianGrid
             stroke={analyticsChartTheme.gridStroke}
-            strokeDasharray="3 3"
+            strokeDasharray={analyticsChartTheme.gridDasharray}
             vertical={false}
           />
           <XAxis
@@ -67,7 +71,7 @@ export function OutputByStrainChart({
             tick={analyticsChartTheme.axisTick}
             tickLine={false}
             axisLine={false}
-            tickMargin={10}
+            tickMargin={12}
             minTickGap={16}
           />
           <YAxis
@@ -75,7 +79,7 @@ export function OutputByStrainChart({
             tick={analyticsChartTheme.axisTick}
             tickLine={false}
             axisLine={false}
-            tickMargin={10}
+            tickMargin={12}
             width={72}
           />
           <Tooltip
@@ -84,13 +88,14 @@ export function OutputByStrainChart({
             contentStyle={analyticsChartTheme.tooltipContentStyle}
             labelStyle={analyticsChartTheme.tooltipLabelStyle}
             itemStyle={analyticsChartTheme.tooltipItemStyle}
-            cursor={{ fill: 'rgba(148, 163, 184, 0.10)' }}
+            wrapperStyle={analyticsChartTheme.tooltipWrapperStyle}
+            cursor={{ fill: analyticsChartTheme.cursorFill }}
           />
           <Bar
             dataKey="totalOutputG"
             name="Total output"
             fill="#2563eb"
-            radius={[12, 12, 0, 0]}
+            radius={[10, 10, 0, 0]}
             maxBarSize={48}
           />
         </BarChart>

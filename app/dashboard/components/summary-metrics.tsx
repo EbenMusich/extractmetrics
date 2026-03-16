@@ -1,8 +1,11 @@
+import type { ReactNode } from 'react'
+import { DashboardStatCard } from './dashboard-stat-card'
 import { EmptyState, SectionHeader, SkeletonBlock, dashboardSurfaceClass } from './dashboard-ui'
 
 type SummaryEmptyState = {
   title: string
   description: string
+  action?: ReactNode
 }
 
 type SummaryMetricsProps = {
@@ -23,7 +26,7 @@ type SummaryMetricsProps = {
 type SummaryCard = {
   label: string
   value: string
-  eyebrow: string
+  unit?: string
 }
 
 const numberFormatter = new Intl.NumberFormat('en-US', {
@@ -40,13 +43,13 @@ const currencyFormatter = new Intl.NumberFormat('en-US', {
 function formatMetricValue(
   value: number | null,
   formatter: (resolvedValue: number) => string,
-  suffix = ''
+  unit?: string
 ) {
   if (value === null) {
-    return '-'
+    return { value: '-' }
   }
 
-  return `${formatter(value)}${suffix}`
+  return { value: formatter(value), unit }
 }
 
 export function SummaryMetrics({
@@ -63,110 +66,122 @@ export function SummaryMetrics({
   isLoading = false,
   emptyState = null,
 }: SummaryMetricsProps) {
+  const formattedYield = formatMetricValue(yieldPercent, numberFormatter.format, '%')
+  const formattedCostPerGram = formatMetricValue(costPerGramOutput, currencyFormatter.format)
+  const formattedCostPerKgBiomass = formatMetricValue(
+    costPerKgBiomass,
+    currencyFormatter.format,
+    '/ kg'
+  )
+  const formattedOutputPerKgBiomass = formatMetricValue(
+    outputPerKgBiomass,
+    numberFormatter.format,
+    'g/kg'
+  )
+  const formattedSolventPerGram = formatMetricValue(
+    solventPerGramOutput,
+    numberFormatter.format,
+    'g/g'
+  )
+  const formattedOutputPerGramSolvent = formatMetricValue(
+    outputPerGramSolvent,
+    numberFormatter.format,
+    'g/g'
+  )
   const cards: SummaryCard[] = [
     {
       label: 'Total runs',
       value: numberFormatter.format(totalRuns),
-      eyebrow: 'Volume',
     },
     {
       label: 'Total output',
-      value: `${numberFormatter.format(totalOutputWeight)} g`,
-      eyebrow: 'Output',
+      value: numberFormatter.format(totalOutputWeight),
+      unit: 'g',
     },
     {
       label: 'Total cost',
       value: currencyFormatter.format(totalCost),
-      eyebrow: 'Spend',
     },
     {
       label: 'Yield',
-      value: formatMetricValue(yieldPercent, numberFormatter.format, '%'),
-      eyebrow: 'Efficiency',
+      value: formattedYield.value,
+      unit: formattedYield.unit,
     },
     {
       label: 'Cost per g output',
-      value: formatMetricValue(costPerGramOutput, currencyFormatter.format),
-      eyebrow: 'Spend',
+      value: formattedCostPerGram.value,
+      unit: formattedCostPerGram.unit,
     },
     {
       label: 'Cost per kg biomass',
-      value: formatMetricValue(costPerKgBiomass, currencyFormatter.format, ' / kg'),
-      eyebrow: 'Efficiency',
+      value: formattedCostPerKgBiomass.value,
+      unit: formattedCostPerKgBiomass.unit,
     },
     {
       label: 'Output per kg biomass',
-      value: formatMetricValue(outputPerKgBiomass, numberFormatter.format, ' g/kg'),
-      eyebrow: 'Efficiency',
+      value: formattedOutputPerKgBiomass.value,
+      unit: formattedOutputPerKgBiomass.unit,
     },
     {
       label: 'Solvent per g output',
-      value: formatMetricValue(solventPerGramOutput, numberFormatter.format, ' g/g'),
-      eyebrow: 'Solvent',
+      value: formattedSolventPerGram.value,
+      unit: formattedSolventPerGram.unit,
     },
     {
       label: 'Output per g solvent',
-      value: formatMetricValue(outputPerGramSolvent, numberFormatter.format, ' g/g'),
-      eyebrow: 'Solvent',
+      value: formattedOutputPerGramSolvent.value,
+      unit: formattedOutputPerGramSolvent.unit,
     },
   ]
 
   return (
     <section className="space-y-5">
-      <SectionHeader title="Summary" description="Quick stats from your selected extraction runs." />
+      <SectionHeader
+        title="Summary"
+        description="Quick stats from your selected extraction runs."
+        action={
+          isLoading ? (
+            <SkeletonBlock className="h-6 w-44 rounded-full" />
+          ) : (
+            <p className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-500 shadow-sm">
+              {selectionLabel}
+            </p>
+          )
+        }
+      />
 
       {isLoading ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
           {cards.map((card) => (
             <article
               key={card.label}
-              className={`${dashboardSurfaceClass} flex min-h-40 flex-col justify-between gap-6 p-5 sm:p-6`}
+              className={`${dashboardSurfaceClass} flex min-h-32 flex-col justify-between gap-6 p-4 sm:p-5`}
             >
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <SkeletonBlock className="h-3 w-16 rounded-lg" />
-                  <SkeletonBlock className="h-4 w-28 rounded-lg" />
-                </div>
-                <div className="space-y-2">
-                  <SkeletonBlock className="h-10 w-32 rounded-xl" />
-                </div>
-              </div>
-              <div className="space-y-2">
+              <div className="space-y-5">
                 <SkeletonBlock className="h-3 w-24 rounded-lg" />
-                <SkeletonBlock className="h-3 w-full rounded-lg" />
+                <div className="flex items-end gap-2">
+                  <SkeletonBlock className="h-10 w-24 rounded-xl" />
+                  <SkeletonBlock className="h-4 w-10 rounded-lg" />
+                </div>
               </div>
             </article>
           ))}
         </div>
       ) : emptyState ? (
-        <EmptyState title={emptyState.title} description={emptyState.description} />
+        <EmptyState
+          title={emptyState.title}
+          description={emptyState.description}
+          action={emptyState.action}
+        />
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
           {cards.map((card) => (
-            <article
+            <DashboardStatCard
               key={card.label}
-              className={`${dashboardSurfaceClass} flex min-h-40 flex-col justify-between gap-6 p-5 sm:p-6`}
-            >
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-400">
-                    {card.eyebrow}
-                  </p>
-                  <p className="text-sm font-medium text-gray-600">{card.label}</p>
-                </div>
-                <div className="space-y-2">
-                  <p className="text-3xl font-semibold tracking-tight text-gray-950 sm:text-[2rem]">
-                    {card.value}
-                  </p>
-                </div>
-              </div>
-              <div className="space-y-1">
-                <p className="text-xs font-medium uppercase tracking-[0.18em] text-gray-400">
-                  Filters applied
-                </p>
-                <p className="text-xs text-gray-500">{selectionLabel}</p>
-              </div>
-            </article>
+              label={card.label}
+              value={card.value}
+              unit={card.unit}
+            />
           ))}
         </div>
       )}

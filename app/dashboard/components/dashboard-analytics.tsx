@@ -1,6 +1,7 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import Link from 'next/link'
+import { type ReactNode, useMemo, useState } from 'react'
 import { CostBreakdownChart } from './cost-breakdown-chart'
 import { CostTrendChart } from './cost-trend-chart'
 import {
@@ -25,6 +26,8 @@ import {
   SectionHeader,
   SkeletonBlock,
   dashboardSurfaceClass,
+  primaryButtonClass,
+  secondaryButtonClass,
 } from './dashboard-ui'
 
 type DashboardAnalyticsRun = {
@@ -51,6 +54,7 @@ type DashboardAnalyticsProps = {
 type DashboardEmptyState = {
   title: string
   description: string
+  action?: ReactNode
 }
 
 function roundMetric(value: number) {
@@ -185,12 +189,27 @@ export function DashboardAnalytics({ runs, isLoading = false }: DashboardAnalyti
     runs.length === 0
       ? {
           title: 'No runs logged yet',
-          description: 'Add a run to start tracking metrics.',
+          description:
+            'Analytics, trends, and comparisons will appear here once you log your first extraction run.',
+          action: (
+            <Link href="/dashboard/new-run" className={primaryButtonClass}>
+              Log your first run
+            </Link>
+          ),
         }
       : filteredRuns.length === 0
         ? {
             title: 'No data matches the selected filters',
-            description: 'Try clearing or changing a filter.',
+            description: 'Try clearing or adjusting your filters to bring runs back into view.',
+            action: (
+              <button
+                type="button"
+                onClick={() => setFilters(defaultDashboardFilters)}
+                className={secondaryButtonClass}
+              >
+                Clear filters
+              </button>
+            ),
           }
         : null
   const emptyMessage = sectionEmptyState?.description ?? 'Not enough valid data to display this chart.'
@@ -241,51 +260,59 @@ export function DashboardAnalytics({ runs, isLoading = false }: DashboardAnalyti
         isLoading={isLoading}
         emptyState={sectionEmptyState}
       />
-      <div className="grid gap-6 xl:grid-cols-2">
-        <YieldTrendChart runs={filteredRuns} emptyMessage={emptyMessage} isLoading={isLoading} />
-        <CostTrendChart runs={filteredRuns} emptyMessage={emptyMessage} isLoading={isLoading} />
-      </div>
-      <div className="grid gap-6 xl:grid-cols-2">
-        <OutputByStrainChart runs={filteredRuns} emptyMessage={emptyMessage} isLoading={isLoading} />
-        <CostBreakdownChart runs={filteredRuns} emptyMessage={emptyMessage} isLoading={isLoading} />
-      </div>
-      <div className="grid gap-6">
-        <YieldByStrainChart runs={filteredRuns} emptyMessage={emptyMessage} isLoading={isLoading} />
-      </div>
-      <PerformanceInsights
-        filteredRuns={filteredRuns}
-        isLoading={isLoading}
-        emptyState={sectionEmptyState}
-      />
-      {isLoading ? (
+      {sectionEmptyState && !isLoading ? null : (
         <>
           <div className="grid gap-6 xl:grid-cols-2">
-            <PerformanceTableSkeleton
-              title="Strain performance"
-              description="Aggregated yield, cost, and output by strain across your saved runs."
-            />
-            <PerformanceTableSkeleton
-              title="Grower performance"
-              description="Aggregated yield, cost, and output by grower across your saved runs."
-            />
+            <YieldTrendChart runs={filteredRuns} emptyMessage={emptyMessage} isLoading={isLoading} />
+            <CostTrendChart runs={filteredRuns} emptyMessage={emptyMessage} isLoading={isLoading} />
           </div>
-          <PerformanceTableSkeleton
-            title="Output type performance"
-            description="Aggregated yield, cost, and output by output type across your saved runs."
-          />
-          <PerformanceTableSkeleton
-            title="Recent runs"
-            description="Your latest saved extraction runs."
-          />
-        </>
-      ) : (
-        <>
           <div className="grid gap-6 xl:grid-cols-2">
-            <StrainPerformanceTable runs={filteredRuns} emptyMessage={emptyMessage} />
-            <GrowerPerformanceTable runs={filteredRuns} emptyMessage={emptyMessage} />
+            <OutputByStrainChart
+              runs={filteredRuns}
+              emptyMessage={emptyMessage}
+              isLoading={isLoading}
+            />
+            <CostBreakdownChart runs={filteredRuns} emptyMessage={emptyMessage} isLoading={isLoading} />
           </div>
-          <OutputTypePerformanceTable runs={filteredRuns} emptyMessage={emptyMessage} />
-          <RecentRunsTable runs={filteredRuns} emptyMessage={emptyMessage} />
+          <div className="grid gap-6">
+            <YieldByStrainChart runs={filteredRuns} emptyMessage={emptyMessage} isLoading={isLoading} />
+          </div>
+          <PerformanceInsights
+            filteredRuns={filteredRuns}
+            isLoading={isLoading}
+            emptyState={sectionEmptyState}
+          />
+          {isLoading ? (
+            <>
+              <div className="grid gap-6 xl:grid-cols-2">
+                <PerformanceTableSkeleton
+                  title="Strain performance"
+                  description="Aggregated yield, cost, and output by strain across your saved runs."
+                />
+                <PerformanceTableSkeleton
+                  title="Grower performance"
+                  description="Aggregated yield, cost, and output by grower across your saved runs."
+                />
+              </div>
+              <PerformanceTableSkeleton
+                title="Output type performance"
+                description="Aggregated yield, cost, and output by output type across your saved runs."
+              />
+              <PerformanceTableSkeleton
+                title="Recent runs"
+                description="Your latest saved extraction runs."
+              />
+            </>
+          ) : (
+            <>
+              <div className="grid gap-6 xl:grid-cols-2">
+                <StrainPerformanceTable runs={filteredRuns} emptyMessage={emptyMessage} />
+                <GrowerPerformanceTable runs={filteredRuns} emptyMessage={emptyMessage} />
+              </div>
+              <OutputTypePerformanceTable runs={filteredRuns} emptyMessage={emptyMessage} />
+              <RecentRunsTable runs={filteredRuns} emptyMessage={emptyMessage} />
+            </>
+          )}
         </>
       )}
     </div>

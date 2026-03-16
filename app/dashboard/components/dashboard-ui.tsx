@@ -6,7 +6,7 @@ function joinClasses(...classes: Array<string | false | null | undefined>) {
 }
 
 export const dashboardSurfaceClass =
-  'rounded-3xl border border-gray-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04),0_12px_32px_rgba(15,23,42,0.06)]'
+  'rounded-2xl border border-gray-200/80 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.05),0_14px_30px_rgba(15,23,42,0.08)]'
 
 export const dashboardInsetSurfaceClass =
   'rounded-2xl border border-gray-200/80 bg-gray-50/90 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]'
@@ -132,19 +132,23 @@ type EmptyStateProps = {
   title: string
   description: ReactNode
   compact?: boolean
+  action?: ReactNode
 }
 
-export function EmptyState({ title, description, compact = false }: EmptyStateProps) {
+export function EmptyState({ title, description, compact = false, action }: EmptyStateProps) {
   return (
     <div
       className={joinClasses(
         dashboardInsetSurfaceClass,
-        compact ? 'p-5' : 'p-8',
+        compact ? 'p-5' : 'p-8 sm:p-10',
         'text-center'
       )}
     >
-      <p className="text-sm font-medium text-gray-900">{title}</p>
-      <p className="mt-2 text-sm leading-6 text-gray-600">{description}</p>
+      <div className="mx-auto max-w-xl">
+        <p className="text-base font-semibold tracking-tight text-gray-950">{title}</p>
+        <p className="mt-2 text-sm leading-6 text-gray-600">{description}</p>
+        {action ? <div className="mt-5 flex justify-center">{action}</div> : null}
+      </div>
     </div>
   )
 }
