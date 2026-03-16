@@ -13,9 +13,10 @@ import {
 import { getRunYieldPercent } from './analytics-metrics'
 import { AnalyticsChartCard, analyticsChartTheme } from './analytics-chart-card'
 import { formatDate, type RunTableRun } from './run-table-formatters'
+import { roundNumber } from './safe-number'
 
 type YieldTrendChartProps = {
-  runs: RunTableRun[]
+  runs?: RunTableRun[]
   emptyMessage: string
   isLoading?: boolean
 }
@@ -24,6 +25,8 @@ type YieldTrendPoint = {
   date: string
   value: number
 }
+
+const EMPTY_RUNS: RunTableRun[] = []
 
 const percentFormatter = new Intl.NumberFormat('en-US', {
   minimumFractionDigits: 1,
@@ -52,8 +55,9 @@ export function YieldTrendChart({
   emptyMessage,
   isLoading = false,
 }: YieldTrendChartProps) {
+  const safeRuns = runs ?? EMPTY_RUNS
   const data = useMemo<YieldTrendPoint[]>(() => {
-    return [...runs]
+    return [...safeRuns]
       .sort(sortRunsByDate)
       .map((run) => {
         const yieldPercent = getRunYieldPercent(run)
@@ -64,18 +68,18 @@ export function YieldTrendChart({
 
         return {
           date: formatDate(run.run_date),
-          value: Number(yieldPercent.toFixed(2)),
+          value: roundNumber(yieldPercent, 2),
         }
       })
       .filter((point): point is YieldTrendPoint => point !== null)
-  }, [runs])
+  }, [safeRuns])
 
   return (
     <AnalyticsChartCard
       title="Yield trend"
       description="Yield percentage across the selected runs, ordered by run date."
       emptyTitle="No yield trend yet"
-      emptyMessage={runs.length === 0 ? emptyMessage : 'Not enough valid data to display this chart.'}
+      emptyMessage={safeRuns.length === 0 ? emptyMessage : 'Not enough valid data to display this chart.'}
       hasData={data.length > 0}
       isLoading={isLoading}
     >

@@ -1,4 +1,5 @@
 import { getCostPerGram, getYieldPercent, type PerformanceMetricRun } from './analytics-metrics'
+import { coerceFiniteNumber, toSafeNumber } from './safe-number'
 
 export type RunTableRun = PerformanceMetricRun & {
   id: string
@@ -17,44 +18,20 @@ export const numericCellClass =
   'whitespace-nowrap px-4 py-3.5 text-right text-sm tabular-nums text-gray-700 sm:px-5'
 export const textCellClass = 'whitespace-nowrap px-4 py-3.5 text-sm text-gray-700 sm:px-5'
 
-function coerceNumber(value: number | null | undefined) {
-  return typeof value === 'number' && Number.isFinite(value) ? value : null
-}
-
 export function formatGrams(value: number | null | undefined) {
-  const normalizedValue = coerceNumber(value)
-  if (normalizedValue === null) {
-    return '-'
-  }
-
-  return `${normalizedValue.toFixed(1)} g`
+  return `${toSafeNumber(value).toFixed(1)} g`
 }
 
 export function formatGramsPerKg(value: number | null | undefined) {
-  const normalizedValue = coerceNumber(value)
-  if (normalizedValue === null) {
-    return '-'
-  }
-
-  return `${normalizedValue.toFixed(1)} g/kg`
+  return `${toSafeNumber(value).toFixed(1)} g/kg`
 }
 
 export function formatPercent(value: number | null | undefined) {
-  const normalizedValue = coerceNumber(value)
-  if (normalizedValue === null) {
-    return '-'
-  }
-
-  return `${normalizedValue.toFixed(1)}%`
+  return `${toSafeNumber(value).toFixed(1)}%`
 }
 
 export function formatCurrency(value: number | null | undefined) {
-  const normalizedValue = coerceNumber(value)
-  if (normalizedValue === null) {
-    return '-'
-  }
-
-  return currencyFormatter.format(normalizedValue)
+  return currencyFormatter.format(toSafeNumber(value))
 }
 
 export function formatDate(value: string) {
@@ -80,11 +57,11 @@ export function formatText(value: string | null | undefined) {
 }
 
 export function getFormattedYieldPercent(run: RunTableRun) {
-  const biomassInputG = coerceNumber(run.biomass_input_g)
-  const outputWeightG = coerceNumber(run.output_weight_g)
+  const biomassInputG = coerceFiniteNumber(run.biomass_input_g)
+  const outputWeightG = coerceFiniteNumber(run.output_weight_g)
 
   if (biomassInputG === null || outputWeightG === null) {
-    return '-'
+    return formatPercent(0)
   }
 
   return formatPercent(getYieldPercent(outputWeightG, biomassInputG))

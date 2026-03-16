@@ -1,3 +1,5 @@
+import { coerceFiniteNumber, roundNumber } from './safe-number'
+
 export type PerformanceMetricRun = {
   strain_name?: string | null
   grower_name?: string | null
@@ -61,16 +63,13 @@ type MutableAggregatedPerformanceMetric = {
   outputPerKgCount: number
 }
 
-function coerceNumber(value: number | null | undefined) {
-  return typeof value === 'number' && Number.isFinite(value) ? value : null
-}
-
 function divideSafely(numerator: number, denominator: number) {
   if (!Number.isFinite(numerator) || !Number.isFinite(denominator) || denominator <= 0) {
     return null
   }
 
-  return numerator / denominator
+  const result = numerator / denominator
+  return Number.isFinite(result) ? result : null
 }
 
 function getMetricLabel(value: string | null | undefined) {
@@ -84,7 +83,7 @@ function getStrainChartLabel(value: string | null | undefined) {
 }
 
 function getBiomassInputKg(run: PerformanceMetricRun) {
-  const biomassInputG = coerceNumber(run.biomass_input_g)
+  const biomassInputG = coerceFiniteNumber(run.biomass_input_g)
 
   if (biomassInputG === null || biomassInputG <= 0) {
     return null
@@ -94,13 +93,13 @@ function getBiomassInputKg(run: PerformanceMetricRun) {
 }
 
 export function getLaborCost(run: PerformanceMetricRun) {
-  const laborCost = coerceNumber(run.labor_cost)
+  const laborCost = coerceFiniteNumber(run.labor_cost)
   if (laborCost !== null) {
     return laborCost
   }
 
-  const laborMinutes = coerceNumber(run.labor_minutes)
-  const laborRate = coerceNumber(run.labor_rate)
+  const laborMinutes = coerceFiniteNumber(run.labor_minutes)
+  const laborRate = coerceFiniteNumber(run.labor_rate)
 
   if (laborMinutes === null || laborRate === null) {
     return 0
@@ -110,16 +109,12 @@ export function getLaborCost(run: PerformanceMetricRun) {
 }
 
 export function getYieldPercent(outputWeightG: number, biomassInputG: number) {
-  if (biomassInputG <= 0) {
-    return 0
-  }
-
-  return (outputWeightG / biomassInputG) * 100
+  return divideSafely(outputWeightG * 100, biomassInputG) ?? 0
 }
 
 export function getRunYieldPercent(run: PerformanceMetricRun) {
-  const biomassInputG = coerceNumber(run.biomass_input_g)
-  const outputWeightG = coerceNumber(run.output_weight_g)
+  const biomassInputG = coerceFiniteNumber(run.biomass_input_g)
+  const outputWeightG = coerceFiniteNumber(run.output_weight_g)
 
   if (biomassInputG === null || biomassInputG <= 0 || outputWeightG === null) {
     return null
@@ -129,7 +124,7 @@ export function getRunYieldPercent(run: PerformanceMetricRun) {
 }
 
 export function getCostPerGram(run: PerformanceMetricRun) {
-  const outputWeightG = coerceNumber(run.output_weight_g)
+  const outputWeightG = coerceFiniteNumber(run.output_weight_g)
 
   if (outputWeightG === null || outputWeightG <= 0) {
     return null
@@ -150,7 +145,7 @@ export function getCostPerKgBiomass(run: PerformanceMetricRun) {
 
 export function getOutputPerKgBiomass(run: PerformanceMetricRun) {
   const biomassInputKg = getBiomassInputKg(run)
-  const outputWeightG = coerceNumber(run.output_weight_g)
+  const outputWeightG = coerceFiniteNumber(run.output_weight_g)
 
   if (biomassInputKg === null || outputWeightG === null) {
     return null
@@ -160,8 +155,8 @@ export function getOutputPerKgBiomass(run: PerformanceMetricRun) {
 }
 
 export function getSolventPerGramOutput(run: PerformanceMetricRun) {
-  const solventUsedG = coerceNumber(run.solvent_used_g)
-  const outputWeightG = coerceNumber(run.output_weight_g)
+  const solventUsedG = coerceFiniteNumber(run.solvent_used_g)
+  const outputWeightG = coerceFiniteNumber(run.output_weight_g)
 
   if (solventUsedG === null || solventUsedG < 0 || outputWeightG === null || outputWeightG <= 0) {
     return null
@@ -171,8 +166,8 @@ export function getSolventPerGramOutput(run: PerformanceMetricRun) {
 }
 
 export function getOutputPerGramSolvent(run: PerformanceMetricRun) {
-  const solventUsedG = coerceNumber(run.solvent_used_g)
-  const outputWeightG = coerceNumber(run.output_weight_g)
+  const solventUsedG = coerceFiniteNumber(run.solvent_used_g)
+  const outputWeightG = coerceFiniteNumber(run.output_weight_g)
 
   if (solventUsedG === null || solventUsedG <= 0 || outputWeightG === null || outputWeightG < 0) {
     return null
@@ -182,21 +177,22 @@ export function getOutputPerGramSolvent(run: PerformanceMetricRun) {
 }
 
 export function getTotalCost(run: PerformanceMetricRun) {
-  return (
+  return roundNumber(
     getLaborCost(run) +
-    (coerceNumber(run.material_cost) ?? 0) +
-    (coerceNumber(run.utility_cost) ?? 0) +
-    (coerceNumber(run.other_cost) ?? 0)
+      (coerceFiniteNumber(run.material_cost) ?? 0) +
+      (coerceFiniteNumber(run.utility_cost) ?? 0) +
+      (coerceFiniteNumber(run.other_cost) ?? 0),
+    2
   )
 }
 
 export function getCostBreakdownData(runs: PerformanceMetricRun[]): CostBreakdownDatum[] {
   const totals = runs.reduce(
     (aggregate, run) => {
-      aggregate.material += coerceNumber(run.material_cost) ?? 0
-      aggregate.labor += coerceNumber(run.labor_cost) ?? 0
-      aggregate.utility += coerceNumber(run.utility_cost) ?? 0
-      aggregate.other += coerceNumber(run.other_cost) ?? 0
+      aggregate.material += coerceFiniteNumber(run.material_cost) ?? 0
+      aggregate.labor += coerceFiniteNumber(run.labor_cost) ?? 0
+      aggregate.utility += coerceFiniteNumber(run.utility_cost) ?? 0
+      aggregate.other += coerceFiniteNumber(run.other_cost) ?? 0
       return aggregate
     },
     {
@@ -208,10 +204,10 @@ export function getCostBreakdownData(runs: PerformanceMetricRun[]): CostBreakdow
   )
 
   return [
-    { name: 'Material', value: Number(totals.material.toFixed(2)) },
-    { name: 'Labor', value: Number(totals.labor.toFixed(2)) },
-    { name: 'Utility', value: Number(totals.utility.toFixed(2)) },
-    { name: 'Other', value: Number(totals.other.toFixed(2)) },
+    { name: 'Material', value: roundNumber(totals.material, 2) },
+    { name: 'Labor', value: roundNumber(totals.labor, 2) },
+    { name: 'Utility', value: roundNumber(totals.utility, 2) },
+    { name: 'Other', value: roundNumber(totals.other, 2) },
   ]
 }
 
@@ -229,8 +225,8 @@ export function getYieldByStrainData(
   >()
 
   for (const run of runs) {
-    const biomassInputG = coerceNumber(run.biomass_input_g)
-    const outputWeightG = coerceNumber(run.output_weight_g)
+    const biomassInputG = coerceFiniteNumber(run.biomass_input_g)
+    const outputWeightG = coerceFiniteNumber(run.output_weight_g)
 
     if (biomassInputG === null || biomassInputG <= 0 || outputWeightG === null || outputWeightG < 0) {
       continue
@@ -270,16 +266,16 @@ export function getYieldByStrainData(
     .slice(0, limit)
     .map(({ name, totalOutputG, totalBiomassG }) => ({
       name,
-      value: Number(getYieldPercent(totalOutputG, totalBiomassG).toFixed(2)),
+      value: roundNumber(getYieldPercent(totalOutputG, totalBiomassG), 2),
     }))
 }
 
 export function getDashboardSummaryMetrics(runs: PerformanceMetricRun[]): DashboardSummaryMetrics {
   const totals = runs.reduce(
     (aggregate, run) => {
-      const biomassInputG = coerceNumber(run.biomass_input_g)
-      const outputWeightG = coerceNumber(run.output_weight_g)
-      const solventUsedG = coerceNumber(run.solvent_used_g)
+      const biomassInputG = coerceFiniteNumber(run.biomass_input_g)
+      const outputWeightG = coerceFiniteNumber(run.output_weight_g)
+      const solventUsedG = coerceFiniteNumber(run.solvent_used_g)
 
       aggregate.totalCost += getTotalCost(run)
 
@@ -309,8 +305,8 @@ export function getDashboardSummaryMetrics(runs: PerformanceMetricRun[]): Dashbo
 
   return {
     totalRuns: runs.length,
-    totalOutputWeightG: Number(totals.totalOutputWeightG.toFixed(2)),
-    totalCost: Number(totals.totalCost.toFixed(2)),
+    totalOutputWeightG: roundNumber(totals.totalOutputWeightG, 2),
+    totalCost: roundNumber(totals.totalCost, 2),
     yieldPercent: divideSafely(totals.totalOutputWeightG * 100, totals.totalBiomassInputG),
     costPerGramOutput: divideSafely(totals.totalCost, totals.totalOutputWeightG),
     costPerKgBiomass:
@@ -350,7 +346,7 @@ export function aggregatePerformanceMetrics(
       }
 
     aggregate.runCount += 1
-    aggregate.totalOutputG += coerceNumber(run.output_weight_g) ?? 0
+    aggregate.totalOutputG += coerceFiniteNumber(run.output_weight_g) ?? 0
 
     const yieldPercent = getRunYieldPercent(run)
     if (yieldPercent !== null) {

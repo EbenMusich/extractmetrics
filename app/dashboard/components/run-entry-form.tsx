@@ -22,6 +22,7 @@ import {
   StatusBanner,
   errorTextClass,
 } from './dashboard-ui'
+import { coerceFiniteNumber, roundNumber, toSafeNumber } from './safe-number'
 
 const initialState: CreateRunFormState = {
   error: null,
@@ -87,9 +88,9 @@ function createInitialValues(): RunFormValues {
     solvent_used_g: '',
     labor_minutes: '0',
     labor_rate: '0',
-    material_cost: '',
-    utility_cost: '',
-    other_cost: '',
+    material_cost: '0',
+    utility_cost: '0',
+    other_cost: '0',
     notes: '',
   }
 }
@@ -116,14 +117,14 @@ function mergeInitialValues(initialValues?: Partial<RunFormValues>): RunFormValu
 
 function validateForm(values: RunFormValues): RunFormFieldErrors {
   const errors: RunFormFieldErrors = {}
-  const biomassInput = Number(values.biomass_input_g)
-  const outputWeight = Number(values.output_weight_g)
-  const solventUsed = Number(values.solvent_used_g)
-  const laborMinutes = Number(values.labor_minutes)
-  const laborRate = Number(values.labor_rate)
-  const materialCost = Number(values.material_cost)
-  const utilityCost = Number(values.utility_cost)
-  const otherCost = Number(values.other_cost)
+  const biomassInput = coerceFiniteNumber(values.biomass_input_g)
+  const outputWeight = coerceFiniteNumber(values.output_weight_g)
+  const solventUsed = coerceFiniteNumber(values.solvent_used_g)
+  const laborMinutes = coerceFiniteNumber(values.labor_minutes)
+  const laborRate = coerceFiniteNumber(values.labor_rate)
+  const materialCost = coerceFiniteNumber(values.material_cost)
+  const utilityCost = coerceFiniteNumber(values.utility_cost)
+  const otherCost = coerceFiniteNumber(values.other_cost)
 
   if (!values.run_date) {
     errors.run_date = 'Run date is required.'
@@ -140,47 +141,47 @@ function validateForm(values: RunFormValues): RunFormFieldErrors {
 
   if (!values.biomass_input_g.trim()) {
     errors.biomass_input_g = 'Biomass input is required.'
-  } else if (!Number.isFinite(biomassInput) || biomassInput <= 0) {
+  } else if (biomassInput === null || biomassInput <= 0) {
     errors.biomass_input_g = 'Biomass input must be greater than 0.'
   }
 
   if (!values.output_weight_g.trim()) {
     errors.output_weight_g = 'Output weight is required.'
-  } else if (!Number.isFinite(outputWeight) || outputWeight <= 0) {
+  } else if (outputWeight === null || outputWeight <= 0) {
     errors.output_weight_g = 'Output weight must be greater than 0.'
   }
 
-  if (values.solvent_used_g.trim() && (!Number.isFinite(solventUsed) || solventUsed < 0)) {
+  if (values.solvent_used_g.trim() && (solventUsed === null || solventUsed < 0)) {
     errors.solvent_used_g = 'Solvent used must be 0 or greater.'
   }
 
   if (!values.labor_minutes.trim()) {
     errors.labor_minutes = 'Labor minutes is required.'
-  } else if (!Number.isFinite(laborMinutes) || laborMinutes < 0) {
+  } else if (laborMinutes === null || laborMinutes < 0) {
     errors.labor_minutes = 'Labor minutes must be 0 or greater.'
   }
 
   if (!values.labor_rate.trim()) {
     errors.labor_rate = 'Labor rate is required.'
-  } else if (!Number.isFinite(laborRate) || laborRate < 0) {
+  } else if (laborRate === null || laborRate < 0) {
     errors.labor_rate = 'Labor rate must be 0 or greater.'
   }
 
   if (!values.material_cost.trim()) {
     errors.material_cost = 'Material cost is required.'
-  } else if (!Number.isFinite(materialCost) || materialCost < 0) {
+  } else if (materialCost === null || materialCost < 0) {
     errors.material_cost = 'Material cost must be 0 or greater.'
   }
 
   if (!values.utility_cost.trim()) {
     errors.utility_cost = 'Utility cost is required.'
-  } else if (!Number.isFinite(utilityCost) || utilityCost < 0) {
+  } else if (utilityCost === null || utilityCost < 0) {
     errors.utility_cost = 'Utility cost must be 0 or greater.'
   }
 
   if (!values.other_cost.trim()) {
     errors.other_cost = 'Other cost is required.'
-  } else if (!Number.isFinite(otherCost) || otherCost < 0) {
+  } else if (otherCost === null || otherCost < 0) {
     errors.other_cost = 'Other cost must be 0 or greater.'
   }
 
@@ -188,14 +189,14 @@ function validateForm(values: RunFormValues): RunFormFieldErrors {
 }
 
 function getOutputWeightWarning(values: RunFormValues) {
-  const biomassInput = Number(values.biomass_input_g)
-  const outputWeight = Number(values.output_weight_g)
+  const biomassInput = coerceFiniteNumber(values.biomass_input_g)
+  const outputWeight = coerceFiniteNumber(values.output_weight_g)
 
   if (
     values.biomass_input_g.trim() &&
     values.output_weight_g.trim() &&
-    Number.isFinite(biomassInput) &&
-    Number.isFinite(outputWeight) &&
+    biomassInput !== null &&
+    outputWeight !== null &&
     biomassInput > 0 &&
     outputWeight > biomassInput
   ) {
@@ -206,12 +207,7 @@ function getOutputWeightWarning(values: RunFormValues) {
 }
 
 function readNumericValue(value: string) {
-  if (!value.trim()) {
-    return null
-  }
-
-  const numericValue = Number(value)
-  return Number.isFinite(numericValue) ? numericValue : null
+  return coerceFiniteNumber(value)
 }
 
 function getOutputWeightHelper(values: RunFormValues) {
@@ -227,7 +223,7 @@ function getOutputWeightHelper(values: RunFormValues) {
     return 'Recorded output weight in grams.'
   }
 
-  return `${percentFormatter.format((outputWeight / biomassInput) * 100)}% current estimated yield.`
+  return `${percentFormatter.format(roundNumber((outputWeight / biomassInput) * 100, 1))}% current estimated yield.`
 }
 
 function getLaborCostPreview(values: RunFormValues) {
@@ -238,7 +234,7 @@ function getLaborCostPreview(values: RunFormValues) {
     return 'Hourly rate in USD. Labor cost is calculated automatically.'
   }
 
-  const laborCost = (laborMinutes / 60) * laborRate
+  const laborCost = toSafeNumber((laborMinutes / 60) * laborRate)
   return `${currencyFormatter.format(laborCost)} calculated labor cost from ${laborMinutes} min at ${currencyFormatter.format(laborRate)}/hr.`
 }
 
@@ -248,7 +244,9 @@ function getTotalTrackedCostHelper(values: RunFormValues) {
   const materialCost = readNumericValue(values.material_cost) ?? 0
   const utilityCost = readNumericValue(values.utility_cost) ?? 0
   const otherCost = readNumericValue(values.other_cost) ?? 0
-  const totalTrackedCost = materialCost + utilityCost + otherCost + (laborMinutes / 60) * laborRate
+  const totalTrackedCost = toSafeNumber(
+    materialCost + utilityCost + otherCost + (laborMinutes / 60) * laborRate
+  )
 
   return `${currencyFormatter.format(totalTrackedCost)} total tracked cost so far across labor, materials, utilities, and other costs.`
 }

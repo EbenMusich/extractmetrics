@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { DashboardStatCard } from './dashboard-stat-card'
 import { EmptyState, SectionHeader, SkeletonBlock, dashboardSurfaceClass } from './dashboard-ui'
+import { toSafeNumber } from './safe-number'
 
 type SummaryEmptyState = {
   title: string
@@ -45,11 +46,10 @@ function formatMetricValue(
   formatter: (resolvedValue: number) => string,
   unit?: string
 ) {
-  if (value === null) {
-    return { value: '-' }
+  return {
+    value: formatter(toSafeNumber(value)),
+    unit,
   }
-
-  return { value: formatter(value), unit }
 }
 
 export function SummaryMetrics({
@@ -91,16 +91,16 @@ export function SummaryMetrics({
   const cards: SummaryCard[] = [
     {
       label: 'Total runs',
-      value: numberFormatter.format(totalRuns),
+      value: numberFormatter.format(toSafeNumber(totalRuns)),
     },
     {
       label: 'Total output',
-      value: numberFormatter.format(totalOutputWeight),
+      value: numberFormatter.format(toSafeNumber(totalOutputWeight)),
       unit: 'g',
     },
     {
       label: 'Total cost',
-      value: currencyFormatter.format(totalCost),
+      value: currencyFormatter.format(toSafeNumber(totalCost)),
     },
     {
       label: 'Yield',

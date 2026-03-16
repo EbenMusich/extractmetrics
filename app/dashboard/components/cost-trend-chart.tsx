@@ -13,9 +13,10 @@ import {
 import { getCostPerGram } from './analytics-metrics'
 import { AnalyticsChartCard, analyticsChartTheme } from './analytics-chart-card'
 import { formatCurrency, formatDate, type RunTableRun } from './run-table-formatters'
+import { roundNumber } from './safe-number'
 
 type CostTrendChartProps = {
-  runs: RunTableRun[]
+  runs?: RunTableRun[]
   emptyMessage: string
   isLoading?: boolean
 }
@@ -24,6 +25,8 @@ type CostTrendPoint = {
   date: string
   value: number
 }
+
+const EMPTY_RUNS: RunTableRun[] = []
 
 function sortRunsByDate(left: RunTableRun, right: RunTableRun) {
   return left.run_date.localeCompare(right.run_date)
@@ -43,8 +46,9 @@ export function CostTrendChart({
   emptyMessage,
   isLoading = false,
 }: CostTrendChartProps) {
+  const safeRuns = runs ?? EMPTY_RUNS
   const data = useMemo<CostTrendPoint[]>(() => {
-    return [...runs]
+    return [...safeRuns]
       .sort(sortRunsByDate)
       .map((run) => {
         const costPerGram = getCostPerGram(run)
@@ -55,18 +59,18 @@ export function CostTrendChart({
 
         return {
           date: formatDate(run.run_date),
-          value: Number(costPerGram.toFixed(2)),
+          value: roundNumber(costPerGram, 2),
         }
       })
       .filter((point): point is CostTrendPoint => point !== null)
-  }, [runs])
+  }, [safeRuns])
 
   return (
     <AnalyticsChartCard
       title="Cost per g output trend"
       description="Cost per gram of output across the selected runs, using the same run set as the yield chart."
       emptyTitle="No cost trend yet"
-      emptyMessage={runs.length === 0 ? emptyMessage : 'Not enough valid data to display this chart.'}
+      emptyMessage={safeRuns.length === 0 ? emptyMessage : 'Not enough valid data to display this chart.'}
       hasData={data.length > 0}
       isLoading={isLoading}
     >

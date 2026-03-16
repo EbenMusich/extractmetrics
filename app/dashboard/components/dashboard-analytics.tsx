@@ -22,6 +22,7 @@ import { YieldTrendChart } from './yield-trend-chart'
 import {
   getDashboardSummaryMetrics,
 } from './analytics-metrics'
+import { roundNumber } from './safe-number'
 import {
   SectionHeader,
   SkeletonBlock,
@@ -47,7 +48,7 @@ type DashboardAnalyticsRun = {
 }
 
 type DashboardAnalyticsProps = {
-  runs: DashboardAnalyticsRun[]
+  runs?: DashboardAnalyticsRun[]
   isLoading?: boolean
 }
 
@@ -57,8 +58,10 @@ type DashboardEmptyState = {
   action?: ReactNode
 }
 
-function roundMetric(value: number) {
-  return Number(value.toFixed(2))
+const EMPTY_RUNS: DashboardAnalyticsRun[] = []
+
+function roundMetric(value: number | null | undefined) {
+  return roundNumber(value, 2)
 }
 
 function parseRunDate(value: string) {
@@ -142,21 +145,22 @@ function PerformanceTableSkeleton({ title, description }: { title: string; descr
 }
 
 export function DashboardAnalytics({ runs, isLoading = false }: DashboardAnalyticsProps) {
+  const safeRuns = runs ?? EMPTY_RUNS
   const [filters, setFilters] = useState<DashboardFilterState>(defaultDashboardFilters)
 
   const filterOptions = useMemo(
     () => ({
-      strain: getFilterOptions(runs, 'strain_name'),
-      grower: getFilterOptions(runs, 'grower_name'),
-      outputType: getFilterOptions(runs, 'output_type'),
+      strain: getFilterOptions(safeRuns, 'strain_name'),
+      grower: getFilterOptions(safeRuns, 'grower_name'),
+      outputType: getFilterOptions(safeRuns, 'output_type'),
     }),
-    [runs]
+    [safeRuns]
   )
 
   const filteredRuns = useMemo(() => {
     const cutoffDate = getCutoffDate(filters.dateRange)
 
-    return runs.filter((run) => {
+    return safeRuns.filter((run) => {
       if (!matchesFilter(run.strain_name, filters.strain)) {
         return false
       }
@@ -176,7 +180,7 @@ export function DashboardAnalytics({ runs, isLoading = false }: DashboardAnalyti
       const runDate = parseRunDate(run.run_date)
       return runDate ? runDate >= cutoffDate : true
     })
-  }, [filters, runs])
+  }, [filters, safeRuns])
   const summaryMetrics = useMemo(() => getDashboardSummaryMetrics(filteredRuns), [filteredRuns])
   const activeFilterLabels = [
     filters.dateRange !== 'all' ? getDashboardDateRangeLabel(filters.dateRange) : null,
@@ -186,7 +190,7 @@ export function DashboardAnalytics({ runs, isLoading = false }: DashboardAnalyti
   ].filter((value): value is string => Boolean(value))
   const selectionLabel = activeFilterLabels.length > 0 ? activeFilterLabels.join(' | ') : 'All saved runs'
   const sectionEmptyState: DashboardEmptyState | null =
-    runs.length === 0
+    safeRuns.length === 0
       ? {
           title: 'No runs logged yet',
           description:
@@ -222,7 +226,7 @@ export function DashboardAnalytics({ runs, isLoading = false }: DashboardAnalyti
         strainOptions={filterOptions.strain}
         growerOptions={filterOptions.grower}
         outputTypeOptions={filterOptions.outputType}
-        totalRunCount={runs.length}
+        totalRunCount={safeRuns.length}
         filteredRunCount={filteredRuns.length}
         isLoading={isLoading}
       />

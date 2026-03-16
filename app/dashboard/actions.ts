@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { coerceFiniteNumber, toSafeNumber } from './components/safe-number'
 
 export type CreateRunFormState = {
   error: string | null
@@ -62,8 +63,7 @@ function readNumber(formData: FormData, field: string) {
     return null
   }
 
-  const value = Number(rawValue)
-  return Number.isFinite(value) ? value : Number.NaN
+  return coerceFiniteNumber(rawValue) ?? Number.NaN
 }
 
 function readRedirectTarget(formData: FormData) {
@@ -86,7 +86,7 @@ function appendQueryFlag(path: string, key: string) {
 }
 
 function calculateLaborCost(laborMinutes: number, laborRate: number) {
-  return (laborMinutes / 60) * laborRate
+  return toSafeNumber((laborMinutes / 60) * laborRate)
 }
 
 function createFieldErrorState(
@@ -212,15 +212,15 @@ function buildRunPayload(userId: string, values: RunFormValues) {
     run_date: values.runDate,
     strain_name: values.strainName,
     grower_name: values.growerName,
-    biomass_input_g: values.biomassInputG,
-    output_weight_g: values.outputWeightG,
-    solvent_used_g: values.solventUsedG,
-    labor_minutes: values.laborMinutes,
-    labor_rate: values.laborRate,
-    labor_cost: values.laborCost,
-    material_cost: values.materialCost,
-    utility_cost: values.utilityCost,
-    other_cost: values.otherCost,
+    biomass_input_g: values.biomassInputG ?? 0,
+    output_weight_g: values.outputWeightG ?? 0,
+    solvent_used_g: values.solventUsedG ?? 0,
+    labor_minutes: values.laborMinutes ?? 0,
+    labor_rate: values.laborRate ?? 0,
+    labor_cost: toSafeNumber(values.laborCost),
+    material_cost: values.materialCost ?? 0,
+    utility_cost: values.utilityCost ?? 0,
+    other_cost: values.otherCost ?? 0,
     output_type: values.outputType,
     notes: values.notes || null,
   }

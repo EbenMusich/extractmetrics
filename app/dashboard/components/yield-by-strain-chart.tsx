@@ -15,10 +15,12 @@ import { AnalyticsChartCard, analyticsChartTheme } from './analytics-chart-card'
 import { type RunTableRun } from './run-table-formatters'
 
 type YieldByStrainChartProps = {
-  runs: RunTableRun[]
+  runs?: RunTableRun[]
   emptyMessage: string
   isLoading?: boolean
 }
+
+const EMPTY_RUNS: RunTableRun[] = []
 
 const percentFormatter = new Intl.NumberFormat('en-US', {
   minimumFractionDigits: 1,
@@ -34,9 +36,10 @@ export function YieldByStrainChart({
   emptyMessage,
   isLoading = false,
 }: YieldByStrainChartProps) {
-  const data = useMemo<YieldByStrainDatum[]>(() => getYieldByStrainData(runs), [runs])
+  const safeRuns = runs ?? EMPTY_RUNS
+  const data = useMemo<YieldByStrainDatum[]>(() => getYieldByStrainData(safeRuns), [safeRuns])
   const resolvedEmptyMessage =
-    runs.length === 0 ? emptyMessage : 'Not enough valid data to display this chart.'
+    safeRuns.length === 0 ? emptyMessage : 'Not enough valid data to display this chart.'
 
   return (
     <AnalyticsChartCard

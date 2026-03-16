@@ -7,6 +7,7 @@ import {
   type PerformanceMetricRun,
 } from './analytics-metrics'
 import { EmptyState, SectionHeader, SkeletonBlock, dashboardSurfaceClass } from './dashboard-ui'
+import { toSafeNumber } from './safe-number'
 
 type PerformanceInsightsEmptyState = {
   title: string
@@ -38,11 +39,11 @@ const currencyFormatter = new Intl.NumberFormat('en-US', {
 })
 
 function formatPercent(value: number | null) {
-  return value === null ? '-' : `${percentFormatter.format(value)}%`
+  return `${percentFormatter.format(toSafeNumber(value))}%`
 }
 
 function formatCostPerGram(value: number | null) {
-  return value === null ? '-' : `${currencyFormatter.format(value)} / g`
+  return `${currencyFormatter.format(toSafeNumber(value))} / g`
 }
 
 function getHighestMetric(
@@ -145,7 +146,7 @@ export function PerformanceInsights({
       ),
     ]
   }, [filteredRuns])
-  const hasInsightData = cards.some((card) => card.value !== '-')
+  const hasInsightData = cards.some((card) => card.label !== 'No valid data')
 
   return (
     <section className="space-y-5">

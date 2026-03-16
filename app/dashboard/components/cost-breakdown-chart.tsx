@@ -15,20 +15,23 @@ import { AnalyticsChartCard, analyticsChartTheme } from './analytics-chart-card'
 import { formatCurrency, type RunTableRun } from './run-table-formatters'
 
 type CostBreakdownChartProps = {
-  runs: RunTableRun[]
+  runs?: RunTableRun[]
   emptyMessage: string
   isLoading?: boolean
 }
+
+const EMPTY_RUNS: RunTableRun[] = []
 
 export function CostBreakdownChart({
   runs,
   emptyMessage,
   isLoading = false,
 }: CostBreakdownChartProps) {
-  const data = useMemo<CostBreakdownDatum[]>(() => getCostBreakdownData(runs), [runs])
-  const hasData = runs.length > 0 && data.some((bucket) => bucket.value > 0)
+  const safeRuns = runs ?? EMPTY_RUNS
+  const data = useMemo<CostBreakdownDatum[]>(() => getCostBreakdownData(safeRuns), [safeRuns])
+  const hasData = safeRuns.length > 0 && data.some((bucket) => bucket.value > 0)
   const resolvedEmptyMessage =
-    runs.length === 0 ? emptyMessage : 'Not enough valid data to display this chart.'
+    safeRuns.length === 0 ? emptyMessage : 'Not enough valid data to display this chart.'
 
   return (
     <AnalyticsChartCard

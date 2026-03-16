@@ -13,6 +13,7 @@ import {
   tableWrapperClass,
 } from './dashboard-ui'
 import { formatGramsPerKg } from './run-table-formatters'
+import { toSafeNumber } from './safe-number'
 
 type GrowerPerformanceRun = PerformanceMetricRun
 
@@ -39,23 +40,15 @@ const currencyFormatter = new Intl.NumberFormat('en-US', {
 })
 
 function formatPercent(value: number | null) {
-  if (value === null) {
-    return '-'
-  }
-
-  return `${percentFormatter.format(value)}%`
+  return `${percentFormatter.format(toSafeNumber(value))}%`
 }
 
 function formatCurrency(value: number | null) {
-  if (value === null) {
-    return '-'
-  }
-
-  return currencyFormatter.format(value)
+  return currencyFormatter.format(toSafeNumber(value))
 }
 
 function formatGrams(value: number) {
-  return `${gramsFormatter.format(value)} g`
+  return `${gramsFormatter.format(toSafeNumber(value))} g`
 }
 
 export function GrowerPerformanceTable({

@@ -13,9 +13,10 @@ import {
 import { aggregatePerformanceMetrics } from './analytics-metrics'
 import { AnalyticsChartCard, analyticsChartTheme } from './analytics-chart-card'
 import { type RunTableRun } from './run-table-formatters'
+import { roundNumber } from './safe-number'
 
 type OutputByStrainChartProps = {
-  runs: RunTableRun[]
+  runs?: RunTableRun[]
   emptyMessage: string
   isLoading?: boolean
 }
@@ -24,6 +25,8 @@ type OutputByStrainPoint = {
   strain: string
   totalOutputG: number
 }
+
+const EMPTY_RUNS: RunTableRun[] = []
 
 const gramsFormatter = new Intl.NumberFormat('en-US', {
   minimumFractionDigits: 1,
@@ -39,19 +42,20 @@ export function OutputByStrainChart({
   emptyMessage,
   isLoading = false,
 }: OutputByStrainChartProps) {
+  const safeRuns = runs ?? EMPTY_RUNS
   const data = useMemo<OutputByStrainPoint[]>(() => {
-    return aggregatePerformanceMetrics(runs, 'strain_name').map((row) => ({
+    return aggregatePerformanceMetrics(safeRuns, 'strain_name').map((row) => ({
       strain: row.label,
-      totalOutputG: Number(row.totalOutputG.toFixed(2)),
+      totalOutputG: roundNumber(row.totalOutputG, 2),
     }))
-  }, [runs])
+  }, [safeRuns])
 
   return (
     <AnalyticsChartCard
       title="Output by strain"
       description="Total output in grams, aggregated by strain from the selected runs."
       emptyTitle="No strain output yet"
-      emptyMessage={runs.length === 0 ? emptyMessage : 'Not enough valid data to display this chart.'}
+      emptyMessage={safeRuns.length === 0 ? emptyMessage : 'Not enough valid data to display this chart.'}
       hasData={data.length > 0}
       isLoading={isLoading}
     >

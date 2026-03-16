@@ -68,9 +68,9 @@ export default async function EditRunPage({ params }: EditRunPageProps) {
             solvent_used_g: run.solvent_used_g?.toString() ?? '',
             labor_minutes: run.labor_minutes?.toString() ?? '0',
             labor_rate: run.labor_rate?.toString() ?? '0',
-            material_cost: run.material_cost?.toString() ?? '',
-            utility_cost: run.utility_cost?.toString() ?? '',
-            other_cost: run.other_cost?.toString() ?? '',
+            material_cost: run.material_cost?.toString() ?? '0',
+            utility_cost: run.utility_cost?.toString() ?? '0',
+            other_cost: run.other_cost?.toString() ?? '0',
             notes: run.notes ?? '',
           }}
         />
