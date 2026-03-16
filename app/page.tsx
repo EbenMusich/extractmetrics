@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
@@ -100,42 +101,21 @@ export default async function Home() {
               <div className="flex items-center justify-between border-b border-zinc-100 pb-4">
                 <div>
                   <p className="text-sm font-semibold text-zinc-950">Dashboard Preview</p>
-                  <p className="text-sm text-zinc-500">Placeholder for analytics overview</p>
+                  <p className="text-sm text-zinc-500">Analytics overview</p>
                 </div>
                 <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
                   Live metrics
                 </span>
               </div>
 
-              <div className="mt-5 grid gap-4 sm:grid-cols-3">
-                <div className="rounded-2xl bg-zinc-50 p-4">
-                  <p className="text-xs uppercase tracking-wide text-zinc-500">Runs</p>
-                  <div className="mt-3 h-7 w-16 rounded bg-zinc-200" />
-                </div>
-                <div className="rounded-2xl bg-zinc-50 p-4">
-                  <p className="text-xs uppercase tracking-wide text-zinc-500">Avg Yield</p>
-                  <div className="mt-3 h-7 w-20 rounded bg-zinc-200" />
-                </div>
-                <div className="rounded-2xl bg-zinc-50 p-4">
-                  <p className="text-xs uppercase tracking-wide text-zinc-500">Cost / g</p>
-                  <div className="mt-3 h-7 w-20 rounded bg-zinc-200" />
-                </div>
-              </div>
-
-              <div className="mt-5 rounded-2xl border border-zinc-100 p-4">
-                <div className="flex h-44 items-end gap-3">
-                  <div className="h-16 flex-1 rounded-t-2xl bg-zinc-200" />
-                  <div className="h-24 flex-1 rounded-t-2xl bg-zinc-300" />
-                  <div className="h-32 flex-1 rounded-t-2xl bg-zinc-400" />
-                  <div className="h-28 flex-1 rounded-t-2xl bg-zinc-300" />
-                  <div className="h-40 flex-1 rounded-t-2xl bg-zinc-950" />
-                </div>
-                <div className="mt-4 grid grid-cols-4 gap-3">
-                  <div className="h-3 rounded bg-zinc-100" />
-                  <div className="h-3 rounded bg-zinc-100" />
-                  <div className="h-3 rounded bg-zinc-100" />
-                  <div className="h-3 rounded bg-zinc-100" />
-                </div>
+              <div className="mt-5 overflow-hidden rounded-2xl">
+                <Image
+                  src="/dashboard-preview.png"
+                  alt="ExtractMetrics dashboard showing extraction run analytics"
+                  width={1200}
+                  height={800}
+                  className="h-auto w-full rounded-xl border shadow-lg"
+                />
               </div>
             </div>
           </div>
