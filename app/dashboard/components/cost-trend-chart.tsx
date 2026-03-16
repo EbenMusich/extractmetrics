@@ -17,6 +17,7 @@ import { formatCurrency, formatDate, type RunTableRun } from './run-table-format
 type CostTrendChartProps = {
   runs: RunTableRun[]
   emptyMessage: string
+  isLoading?: boolean
 }
 
 type CostTrendPoint = {
@@ -37,7 +38,11 @@ function formatAxisDate(value: string) {
   return `${String(month).padStart(2, '0')}/${String(day).padStart(2, '0')}`
 }
 
-export function CostTrendChart({ runs, emptyMessage }: CostTrendChartProps) {
+export function CostTrendChart({
+  runs,
+  emptyMessage,
+  isLoading = false,
+}: CostTrendChartProps) {
   const data = useMemo<CostTrendPoint[]>(() => {
     return [...runs]
       .sort(sortRunsByDate)
@@ -61,8 +66,9 @@ export function CostTrendChart({ runs, emptyMessage }: CostTrendChartProps) {
       title="Cost per gram trend"
       description="Cost per gram across the selected runs, using the same run set as the yield chart."
       emptyTitle="No cost trend yet"
-      emptyMessage={emptyMessage}
+      emptyMessage={runs.length === 0 ? emptyMessage : 'Not enough valid data to display this chart.'}
       hasData={data.length > 0}
+      isLoading={isLoading}
     >
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data} margin={{ top: 8, right: 18, left: 4, bottom: 0 }}>

@@ -6,10 +6,17 @@ import {
   type AggregatedPerformanceMetric,
   type PerformanceMetricRun,
 } from './analytics-metrics'
-import { EmptyState, SectionHeader, dashboardSurfaceClass } from './dashboard-ui'
+import { EmptyState, SectionHeader, SkeletonBlock, dashboardSurfaceClass } from './dashboard-ui'
+
+type PerformanceInsightsEmptyState = {
+  title: string
+  description: string
+}
 
 type PerformanceInsightsProps = {
   filteredRuns: PerformanceMetricRun[]
+  isLoading?: boolean
+  emptyState?: PerformanceInsightsEmptyState | null
 }
 
 type InsightCard = {
@@ -95,7 +102,11 @@ function toInsightCard(
   }
 }
 
-export function PerformanceInsights({ filteredRuns }: PerformanceInsightsProps) {
+export function PerformanceInsights({
+  filteredRuns,
+  isLoading = false,
+  emptyState = null,
+}: PerformanceInsightsProps) {
   const cards = useMemo(() => {
     const strainMetrics = aggregatePerformanceMetrics(filteredRuns, 'strain_name')
     const growerMetrics = aggregatePerformanceMetrics(filteredRuns, 'grower_name')
@@ -134,6 +145,7 @@ export function PerformanceInsights({ filteredRuns }: PerformanceInsightsProps) 
       ),
     ]
   }, [filteredRuns])
+  const hasInsightData = cards.some((card) => card.value !== '-')
 
   return (
     <section className="space-y-5">
@@ -142,11 +154,31 @@ export function PerformanceInsights({ filteredRuns }: PerformanceInsightsProps) 
         description="Automatic highlights based on average yield and cost across the selected runs."
       />
 
-      {filteredRuns.length === 0 ? (
+      {isLoading ? (
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {Array.from({ length: 5 }).map((_, index) => (
+            <article
+              key={index}
+              className={`${dashboardSurfaceClass} flex min-h-36 flex-col justify-between p-5 sm:p-6`}
+            >
+              <div className="space-y-3">
+                <SkeletonBlock className="h-4 w-32 rounded-lg" />
+                <SkeletonBlock className="h-7 w-40 rounded-xl" />
+              </div>
+              <div className="mt-6 flex items-end justify-between gap-4">
+                <SkeletonBlock className="h-9 w-24 rounded-xl" />
+                <SkeletonBlock className="h-3 w-16 rounded-lg" />
+              </div>
+            </article>
+          ))}
+        </div>
+      ) : emptyState ? (
+        <EmptyState compact title={emptyState.title} description={emptyState.description} />
+      ) : !hasInsightData ? (
         <EmptyState
           compact
-          title="No insights yet"
-          description="Add a run or widen the date filter to see performance highlights."
+          title="Not enough valid data"
+          description="Not enough valid data to display this section."
         />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">

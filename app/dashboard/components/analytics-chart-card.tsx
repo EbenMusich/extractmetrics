@@ -1,7 +1,7 @@
 'use client'
 
 import type { ReactNode } from 'react'
-import { EmptyState, dashboardSurfaceClass } from './dashboard-ui'
+import { EmptyState, SkeletonBlock, dashboardSurfaceClass } from './dashboard-ui'
 
 type AnalyticsChartCardProps = {
   title: string
@@ -10,6 +10,7 @@ type AnalyticsChartCardProps = {
   emptyMessage: string
   hasData: boolean
   children: ReactNode
+  isLoading?: boolean
 }
 
 export const analyticsChartTheme = {
@@ -41,6 +42,7 @@ export function AnalyticsChartCard({
   emptyMessage,
   hasData,
   children,
+  isLoading = false,
 }: AnalyticsChartCardProps) {
   return (
     <section className={`${dashboardSurfaceClass} overflow-hidden`}>
@@ -51,7 +53,25 @@ export function AnalyticsChartCard({
         </div>
       </div>
       <div className="px-4 pb-4 pt-4 sm:px-5 sm:pb-5 sm:pt-5">
-        {hasData ? (
+        {isLoading ? (
+          <div className="rounded-2xl bg-gray-50/60 p-2 sm:p-3">
+            <div className="space-y-4 p-3 sm:p-4">
+              <div className="flex items-end justify-between gap-4">
+                <SkeletonBlock className="h-40 flex-1 rounded-2xl" />
+                <div className="flex w-14 flex-col gap-3">
+                  <SkeletonBlock className="h-5 w-full rounded-lg" />
+                  <SkeletonBlock className="h-5 w-full rounded-lg" />
+                  <SkeletonBlock className="h-5 w-full rounded-lg" />
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <SkeletonBlock className="h-4 flex-1 rounded-lg" />
+                <SkeletonBlock className="h-4 flex-1 rounded-lg" />
+                <SkeletonBlock className="h-4 flex-1 rounded-lg" />
+              </div>
+            </div>
+          </div>
+        ) : hasData ? (
           <div className="rounded-2xl bg-gray-50/60 p-2 sm:p-3">
             <div className="h-72 sm:h-80">{children}</div>
           </div>

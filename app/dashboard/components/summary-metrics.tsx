@@ -1,4 +1,9 @@
-import { SectionHeader, dashboardSurfaceClass } from './dashboard-ui'
+import { EmptyState, SectionHeader, SkeletonBlock, dashboardSurfaceClass } from './dashboard-ui'
+
+type SummaryEmptyState = {
+  title: string
+  description: string
+}
 
 type SummaryMetricsProps = {
   totalRuns: number
@@ -9,6 +14,8 @@ type SummaryMetricsProps = {
   averageOutputPerKg: number
   totalOutputWeight: number
   selectionLabel: string
+  isLoading?: boolean
+  emptyState?: SummaryEmptyState | null
 }
 
 type SummaryCard = {
@@ -37,6 +44,8 @@ export function SummaryMetrics({
   averageOutputPerKg,
   totalOutputWeight,
   selectionLabel,
+  isLoading = false,
+  emptyState = null,
 }: SummaryMetricsProps) {
   const cards: SummaryCard[] = [
     {
@@ -80,34 +89,61 @@ export function SummaryMetrics({
     <section className="space-y-5">
       <SectionHeader title="Summary" description="Quick stats from your selected extraction runs." />
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
-        {cards.map((card) => (
-          <article
-            key={card.label}
-            className={`${dashboardSurfaceClass} flex min-h-40 flex-col justify-between gap-6 p-5 sm:p-6`}
-          >
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-400">
-                  {card.eyebrow}
-                </p>
-                <p className="text-sm font-medium text-gray-600">{card.label}</p>
+      {isLoading ? (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+          {cards.map((card) => (
+            <article
+              key={card.label}
+              className={`${dashboardSurfaceClass} flex min-h-40 flex-col justify-between gap-6 p-5 sm:p-6`}
+            >
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <SkeletonBlock className="h-3 w-16 rounded-lg" />
+                  <SkeletonBlock className="h-4 w-28 rounded-lg" />
+                </div>
+                <div className="space-y-2">
+                  <SkeletonBlock className="h-10 w-32 rounded-xl" />
+                </div>
               </div>
               <div className="space-y-2">
-                <p className="text-3xl font-semibold tracking-tight text-gray-950 sm:text-[2rem]">
-                  {card.value}
-                </p>
+                <SkeletonBlock className="h-3 w-24 rounded-lg" />
+                <SkeletonBlock className="h-3 w-full rounded-lg" />
               </div>
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs font-medium uppercase tracking-[0.18em] text-gray-400">
-                Filters applied
-              </p>
-              <p className="text-xs text-gray-500">{selectionLabel}</p>
-            </div>
-          </article>
-        ))}
-      </div>
+            </article>
+          ))}
+        </div>
+      ) : emptyState ? (
+        <EmptyState title={emptyState.title} description={emptyState.description} />
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+          {cards.map((card) => (
+            <article
+              key={card.label}
+              className={`${dashboardSurfaceClass} flex min-h-40 flex-col justify-between gap-6 p-5 sm:p-6`}
+            >
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-400">
+                    {card.eyebrow}
+                  </p>
+                  <p className="text-sm font-medium text-gray-600">{card.label}</p>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-3xl font-semibold tracking-tight text-gray-950 sm:text-[2rem]">
+                    {card.value}
+                  </p>
+                </div>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs font-medium uppercase tracking-[0.18em] text-gray-400">
+                  Filters applied
+                </p>
+                <p className="text-xs text-gray-500">{selectionLabel}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
     </section>
   )
 }

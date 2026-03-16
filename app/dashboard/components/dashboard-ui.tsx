@@ -35,6 +35,19 @@ export const tableRowClass =
   'border-b border-gray-100 transition-colors last:border-b-0 hover:bg-gray-50'
 export const tableEmptyCellClass = 'px-5 py-10 text-center text-sm text-gray-500'
 
+type SkeletonBlockProps = {
+  className?: string
+}
+
+export function SkeletonBlock({ className }: SkeletonBlockProps) {
+  return (
+    <div
+      aria-hidden="true"
+      className={joinClasses('animate-pulse rounded-2xl bg-gray-200/70', className)}
+    />
+  )
+}
+
 type PageHeaderProps = {
   title: string
   description: ReactNode

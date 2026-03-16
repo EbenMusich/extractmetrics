@@ -17,6 +17,7 @@ import { type RunTableRun } from './run-table-formatters'
 type OutputByStrainChartProps = {
   runs: RunTableRun[]
   emptyMessage: string
+  isLoading?: boolean
 }
 
 type OutputByStrainPoint = {
@@ -33,7 +34,11 @@ function formatGrams(value: number) {
   return `${gramsFormatter.format(value)} g`
 }
 
-export function OutputByStrainChart({ runs, emptyMessage }: OutputByStrainChartProps) {
+export function OutputByStrainChart({
+  runs,
+  emptyMessage,
+  isLoading = false,
+}: OutputByStrainChartProps) {
   const data = useMemo<OutputByStrainPoint[]>(() => {
     return aggregatePerformanceMetrics(runs, 'strain_name').map((row) => ({
       strain: row.label,
@@ -46,8 +51,9 @@ export function OutputByStrainChart({ runs, emptyMessage }: OutputByStrainChartP
       title="Output by strain"
       description="Total output in grams, aggregated by strain from the selected runs."
       emptyTitle="No strain output yet"
-      emptyMessage={emptyMessage}
+      emptyMessage={runs.length === 0 ? emptyMessage : 'Not enough valid data to display this chart.'}
       hasData={data.length > 0}
+      isLoading={isLoading}
     >
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 8, right: 18, left: 4, bottom: 8 }}>

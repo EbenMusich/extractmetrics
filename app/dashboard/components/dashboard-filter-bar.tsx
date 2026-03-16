@@ -3,6 +3,7 @@ import {
   inputClass,
   secondaryButtonClass,
   SectionHeader,
+  SkeletonBlock,
 } from './dashboard-ui'
 
 export type DashboardDateRangeValue = '7d' | '30d' | '90d' | 'all'
@@ -22,6 +23,7 @@ type DashboardFilterBarProps = {
   outputTypeOptions: string[]
   totalRunCount: number
   filteredRunCount: number
+  isLoading?: boolean
 }
 
 type FilterSelectProps = {
@@ -30,6 +32,7 @@ type FilterSelectProps = {
   allLabel: string
   options: string[]
   onChange: (value: string) => void
+  disabled?: boolean
 }
 
 const dateRangeOptions: Array<{ value: DashboardDateRangeValue; label: string }> = [
@@ -50,12 +53,17 @@ export function getDashboardDateRangeLabel(value: DashboardDateRangeValue) {
   return dateRangeOptions.find((option) => option.value === value)?.label ?? 'All time'
 }
 
-function FilterSelect({ label, value, allLabel, options, onChange }: FilterSelectProps) {
+function FilterSelect({ label, value, allLabel, options, onChange, disabled = false }: FilterSelectProps) {
   return (
     <label className="space-y-2">
       <span className="text-sm font-medium text-gray-900">{label}</span>
-      <select value={value} onChange={(event) => onChange(event.target.value)} className={inputClass}>
-        <option value="">{allLabel}</option>
+      <select
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className={inputClass}
+        disabled={disabled}
+      >
+        <option value="">{disabled ? 'Loading...' : allLabel}</option>
         {options.map((option) => (
           <option key={option} value={option}>
             {option}
@@ -74,6 +82,7 @@ export function DashboardFilterBar({
   outputTypeOptions,
   totalRunCount,
   filteredRunCount,
+  isLoading = false,
 }: DashboardFilterBarProps) {
   const hasActiveFilters =
     value.dateRange !== defaultDashboardFilters.dateRange ||
@@ -87,9 +96,13 @@ export function DashboardFilterBar({
         title="Analytics overview"
         description="Filter your saved runs to update the dashboard metrics, charts, comparisons, and recent activity."
         action={
-          <p className="text-sm font-medium text-gray-500">
-            Showing {filteredRunCount} of {totalRunCount} runs
-          </p>
+          isLoading ? (
+            <SkeletonBlock className="h-5 w-36 rounded-lg" />
+          ) : (
+            <p className="text-sm font-medium text-gray-500">
+              Showing {filteredRunCount} of {totalRunCount} runs
+            </p>
+          )
         }
       />
 
@@ -107,11 +120,12 @@ export function DashboardFilterBar({
                     type="button"
                     onClick={() => onChange({ ...value, dateRange: option.value })}
                     aria-pressed={isActive}
+                    disabled={isLoading}
                     className={`rounded-xl border px-3.5 py-2 text-sm font-medium transition ${
                       isActive
                         ? 'border-gray-900/10 bg-white text-gray-950 shadow-sm ring-1 ring-gray-900/5'
                         : 'border-transparent text-gray-600 hover:border-gray-200 hover:bg-white hover:text-gray-900'
-                    }`}
+                    } ${isLoading ? 'cursor-wait opacity-70' : ''}`}
                   >
                     {option.label}
                   </button>
@@ -124,6 +138,7 @@ export function DashboardFilterBar({
             <button
               type="button"
               onClick={() => onChange(defaultDashboardFilters)}
+              disabled={isLoading}
               className={secondaryButtonClass}
             >
               Clear filters
@@ -138,6 +153,7 @@ export function DashboardFilterBar({
             allLabel="All strains"
             options={strainOptions}
             onChange={(strain) => onChange({ ...value, strain })}
+            disabled={isLoading}
           />
           <FilterSelect
             label="Grower"
@@ -145,6 +161,7 @@ export function DashboardFilterBar({
             allLabel="All growers"
             options={growerOptions}
             onChange={(grower) => onChange({ ...value, grower })}
+            disabled={isLoading}
           />
           <FilterSelect
             label="Output type"
@@ -152,6 +169,7 @@ export function DashboardFilterBar({
             allLabel="All output types"
             options={outputTypeOptions}
             onChange={(outputType) => onChange({ ...value, outputType })}
+            disabled={isLoading}
           />
         </div>
       </div>

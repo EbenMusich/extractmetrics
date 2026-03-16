@@ -17,6 +17,7 @@ import { type RunTableRun } from './run-table-formatters'
 type YieldByStrainChartProps = {
   runs: RunTableRun[]
   emptyMessage: string
+  isLoading?: boolean
 }
 
 const percentFormatter = new Intl.NumberFormat('en-US', {
@@ -28,12 +29,14 @@ function formatPercent(value: number) {
   return `${percentFormatter.format(value)}%`
 }
 
-export function YieldByStrainChart({ runs, emptyMessage }: YieldByStrainChartProps) {
+export function YieldByStrainChart({
+  runs,
+  emptyMessage,
+  isLoading = false,
+}: YieldByStrainChartProps) {
   const data = useMemo<YieldByStrainDatum[]>(() => getYieldByStrainData(runs), [runs])
   const resolvedEmptyMessage =
-    runs.length === 0
-      ? emptyMessage
-      : 'The selected runs do not have enough valid biomass and output data to calculate strain yield yet.'
+    runs.length === 0 ? emptyMessage : 'Not enough valid data to display this chart.'
 
   return (
     <AnalyticsChartCard
@@ -42,6 +45,7 @@ export function YieldByStrainChart({ runs, emptyMessage }: YieldByStrainChartPro
       emptyTitle="No strain yield yet"
       emptyMessage={resolvedEmptyMessage}
       hasData={data.length > 0}
+      isLoading={isLoading}
     >
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} layout="vertical" margin={{ top: 8, right: 18, left: 12, bottom: 8 }}>

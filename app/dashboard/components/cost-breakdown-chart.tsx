@@ -17,15 +17,18 @@ import { formatCurrency, type RunTableRun } from './run-table-formatters'
 type CostBreakdownChartProps = {
   runs: RunTableRun[]
   emptyMessage: string
+  isLoading?: boolean
 }
 
-export function CostBreakdownChart({ runs, emptyMessage }: CostBreakdownChartProps) {
+export function CostBreakdownChart({
+  runs,
+  emptyMessage,
+  isLoading = false,
+}: CostBreakdownChartProps) {
   const data = useMemo<CostBreakdownDatum[]>(() => getCostBreakdownData(runs), [runs])
   const hasData = runs.length > 0 && data.some((bucket) => bucket.value > 0)
   const resolvedEmptyMessage =
-    runs.length === 0
-      ? emptyMessage
-      : 'The selected runs do not have any recorded cost values yet.'
+    runs.length === 0 ? emptyMessage : 'Not enough valid data to display this chart.'
 
   return (
     <AnalyticsChartCard
@@ -34,6 +37,7 @@ export function CostBreakdownChart({ runs, emptyMessage }: CostBreakdownChartPro
       emptyTitle="No cost breakdown yet"
       emptyMessage={resolvedEmptyMessage}
       hasData={hasData}
+      isLoading={isLoading}
     >
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 8, right: 18, left: 4, bottom: 8 }}>

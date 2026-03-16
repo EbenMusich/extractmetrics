@@ -17,6 +17,7 @@ import { formatDate, type RunTableRun } from './run-table-formatters'
 type YieldTrendChartProps = {
   runs: RunTableRun[]
   emptyMessage: string
+  isLoading?: boolean
 }
 
 type YieldTrendPoint = {
@@ -46,7 +47,11 @@ function formatPercent(value: number) {
   return `${percentFormatter.format(value)}%`
 }
 
-export function YieldTrendChart({ runs, emptyMessage }: YieldTrendChartProps) {
+export function YieldTrendChart({
+  runs,
+  emptyMessage,
+  isLoading = false,
+}: YieldTrendChartProps) {
   const data = useMemo<YieldTrendPoint[]>(() => {
     return [...runs]
       .sort(sortRunsByDate)
@@ -70,8 +75,9 @@ export function YieldTrendChart({ runs, emptyMessage }: YieldTrendChartProps) {
       title="Yield trend"
       description="Yield percentage across the selected runs, ordered by run date."
       emptyTitle="No yield trend yet"
-      emptyMessage={emptyMessage}
+      emptyMessage={runs.length === 0 ? emptyMessage : 'Not enough valid data to display this chart.'}
       hasData={data.length > 0}
+      isLoading={isLoading}
     >
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data} margin={{ top: 8, right: 18, left: 4, bottom: 0 }}>

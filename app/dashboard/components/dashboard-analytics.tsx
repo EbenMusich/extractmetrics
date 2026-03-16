@@ -25,7 +25,11 @@ import {
   getRunYieldPercent,
   getTotalCost,
 } from './analytics-metrics'
-import { EmptyState } from './dashboard-ui'
+import {
+  SectionHeader,
+  SkeletonBlock,
+  dashboardSurfaceClass,
+} from './dashboard-ui'
 
 type DashboardAnalyticsRun = {
   id: string
@@ -44,6 +48,12 @@ type DashboardAnalyticsRun = {
 
 type DashboardAnalyticsProps = {
   runs: DashboardAnalyticsRun[]
+  isLoading?: boolean
+}
+
+type DashboardEmptyState = {
+  title: string
+  description: string
 }
 
 function roundMetric(value: number) {
@@ -104,7 +114,33 @@ function getCutoffDate(filter: DashboardFilterState['dateRange']) {
   return cutoff
 }
 
-export function DashboardAnalytics({ runs }: DashboardAnalyticsProps) {
+function PerformanceTableSkeleton({ title, description }: { title: string; description: string }) {
+  return (
+    <section className="space-y-5">
+      <SectionHeader title={title} description={description} />
+      <div className={`${dashboardSurfaceClass} overflow-hidden`}>
+        <div className="border-b border-gray-200 bg-gray-50/90 px-5 py-3">
+          <div className="grid grid-cols-4 gap-3">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <SkeletonBlock key={index} className="h-3 w-full rounded-lg" />
+            ))}
+          </div>
+        </div>
+        <div className="space-y-4 p-5">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <div key={index} className="grid grid-cols-4 gap-3">
+              {Array.from({ length: 4 }).map((__, cellIndex) => (
+                <SkeletonBlock key={cellIndex} className="h-4 w-full rounded-lg" />
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+export function DashboardAnalytics({ runs, isLoading = false }: DashboardAnalyticsProps) {
   const [filters, setFilters] = useState<DashboardFilterState>(defaultDashboardFilters)
 
   const filterOptions = useMemo(
@@ -182,10 +218,19 @@ export function DashboardAnalytics({ runs }: DashboardAnalyticsProps) {
     filters.outputType ? `Output type: ${filters.outputType}` : null,
   ].filter((value): value is string => Boolean(value))
   const selectionLabel = activeFilterLabels.length > 0 ? activeFilterLabels.join(' | ') : 'All saved runs'
-  const emptyMessage =
+  const sectionEmptyState: DashboardEmptyState | null =
     runs.length === 0
-      ? 'No runs yet. Add your first run to start tracking metrics.'
-      : 'No runs match the selected filters. Try widening the date range or choosing All in a dropdown.'
+      ? {
+          title: 'No runs logged yet',
+          description: 'Add a run to start tracking metrics.',
+        }
+      : filteredRuns.length === 0
+        ? {
+            title: 'No data matches the selected filters',
+            description: 'Try clearing or changing a filter.',
+          }
+        : null
+  const emptyMessage = sectionEmptyState?.description ?? 'Not enough valid data to display this chart.'
 
   return (
     <div className="space-y-10 xl:space-y-12">
@@ -197,13 +242,8 @@ export function DashboardAnalytics({ runs }: DashboardAnalyticsProps) {
         outputTypeOptions={filterOptions.outputType}
         totalRunCount={runs.length}
         filteredRunCount={filteredRuns.length}
+        isLoading={isLoading}
       />
-      {runs.length > 0 && filteredRuns.length === 0 ? (
-        <EmptyState
-          title="No runs match these filters"
-          description="Try widening the date range or setting one of the dropdowns back to All."
-        />
-      ) : null}
       <SummaryMetrics
         totalRuns={totalRuns}
         totalCost={totalCost}
@@ -213,25 +253,56 @@ export function DashboardAnalytics({ runs }: DashboardAnalyticsProps) {
         averageOutputPerKg={averageOutputPerKg}
         totalOutputWeight={totalOutputWeight}
         selectionLabel={selectionLabel}
+        isLoading={isLoading}
+        emptyState={sectionEmptyState}
       />
       <div className="grid gap-6 xl:grid-cols-2">
-        <YieldTrendChart runs={filteredRuns} emptyMessage={emptyMessage} />
-        <CostTrendChart runs={filteredRuns} emptyMessage={emptyMessage} />
+        <YieldTrendChart runs={filteredRuns} emptyMessage={emptyMessage} isLoading={isLoading} />
+        <CostTrendChart runs={filteredRuns} emptyMessage={emptyMessage} isLoading={isLoading} />
       </div>
       <div className="grid gap-6 xl:grid-cols-2">
-        <OutputByStrainChart runs={filteredRuns} emptyMessage={emptyMessage} />
-        <CostBreakdownChart runs={filteredRuns} emptyMessage={emptyMessage} />
+        <OutputByStrainChart runs={filteredRuns} emptyMessage={emptyMessage} isLoading={isLoading} />
+        <CostBreakdownChart runs={filteredRuns} emptyMessage={emptyMessage} isLoading={isLoading} />
       </div>
       <div className="grid gap-6">
-        <YieldByStrainChart runs={filteredRuns} emptyMessage={emptyMessage} />
+        <YieldByStrainChart runs={filteredRuns} emptyMessage={emptyMessage} isLoading={isLoading} />
       </div>
-      <PerformanceInsights filteredRuns={filteredRuns} />
-      <div className="grid gap-6 xl:grid-cols-2">
-        <StrainPerformanceTable runs={filteredRuns} emptyMessage={emptyMessage} />
-        <GrowerPerformanceTable runs={filteredRuns} emptyMessage={emptyMessage} />
-      </div>
-      <OutputTypePerformanceTable runs={filteredRuns} emptyMessage={emptyMessage} />
-      <RecentRunsTable runs={filteredRuns} emptyMessage={emptyMessage} />
+      <PerformanceInsights
+        filteredRuns={filteredRuns}
+        isLoading={isLoading}
+        emptyState={sectionEmptyState}
+      />
+      {isLoading ? (
+        <>
+          <div className="grid gap-6 xl:grid-cols-2">
+            <PerformanceTableSkeleton
+              title="Strain performance"
+              description="Aggregated yield, cost, and output by strain across your saved runs."
+            />
+            <PerformanceTableSkeleton
+              title="Grower performance"
+              description="Aggregated yield, cost, and output by grower across your saved runs."
+            />
+          </div>
+          <PerformanceTableSkeleton
+            title="Output type performance"
+            description="Aggregated yield, cost, and output by output type across your saved runs."
+          />
+          <PerformanceTableSkeleton
+            title="Recent runs"
+            description="Your latest saved extraction runs."
+          />
+        </>
+      ) : (
+        <>
+          <div className="grid gap-6 xl:grid-cols-2">
+            <StrainPerformanceTable runs={filteredRuns} emptyMessage={emptyMessage} />
+            <GrowerPerformanceTable runs={filteredRuns} emptyMessage={emptyMessage} />
+          </div>
+          <OutputTypePerformanceTable runs={filteredRuns} emptyMessage={emptyMessage} />
+          <RecentRunsTable runs={filteredRuns} emptyMessage={emptyMessage} />
+        </>
+      )}
     </div>
   )
 }
