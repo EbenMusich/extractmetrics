@@ -3,10 +3,18 @@ import Link from 'next/link'
 import { RunHistoryTable } from '../components/run-history-table'
 import type { RunTableRun } from '../components/run-table-formatters'
 import { createClient } from '@/lib/supabase/server'
-import { PageHeader, primaryButtonClass } from '../components/dashboard-ui'
+import { PageHeader, StatusBanner, primaryButtonClass } from '../components/dashboard-ui'
 
-export default async function RunsPage() {
+type RunsPageProps = {
+  searchParams?: Promise<{
+    updated?: string
+    deleted?: string
+  }>
+}
+
+export default async function RunsPage({ searchParams }: RunsPageProps) {
   const supabase = await createClient()
+  const resolvedSearchParams = await searchParams
   const {
     data: { user },
   } = await supabase.auth.getUser()
@@ -37,10 +45,15 @@ export default async function RunsPage() {
         }
       />
 
+      {resolvedSearchParams?.updated === '1' ? (
+        <StatusBanner tone="success">Run changes were saved successfully.</StatusBanner>
+      ) : null}
+      {resolvedSearchParams?.deleted === '1' ? (
+        <StatusBanner tone="success">Run deleted successfully.</StatusBanner>
+      ) : null}
+
       {error ? (
-        <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-          Unable to load your runs right now. {error.message}
-        </div>
+        <StatusBanner tone="error">Unable to load your runs right now. {error.message}</StatusBanner>
       ) : null}
 
       <RunHistoryTable runs={runs} />

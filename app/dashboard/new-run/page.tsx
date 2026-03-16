@@ -19,13 +19,13 @@ export default async function NewRunPage() {
         backHref="/dashboard"
         backLabel="Back to dashboard"
         title="New run"
-        description="Record a new extraction run and return to the dashboard with updated analytics."
+        description="Record a new extraction run with clean labels, consistent units, and the cost details needed for launch-ready analytics."
       />
 
       <div className="max-w-4xl">
         <NewRunForm
-          title="Run entry"
-          description="Enter the basics for this extraction run."
+          title="New extraction run"
+          description="Capture the key run details, measured output, and tracked costs for this extraction."
           successRedirectTo="/dashboard"
         />
       </div>

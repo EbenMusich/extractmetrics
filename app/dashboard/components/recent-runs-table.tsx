@@ -61,6 +61,9 @@ export function RecentRunsTable({
       />
 
       <div className={tableWrapperClass}>
+        <div className="border-b border-gray-100 px-4 py-2 text-xs text-gray-500 sm:hidden">
+          Scroll horizontally to view all recent run columns.
+        </div>
         <div className="overflow-x-auto">
           <table className={tableClass}>
             <thead className={tableHeadClass}>

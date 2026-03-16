@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { DashboardAnalytics } from './components/dashboard-analytics'
-import { PageHeader, primaryButtonClass } from './components/dashboard-ui'
+import { PageHeader, StatusBanner, primaryButtonClass } from './components/dashboard-ui'
 
 type DashboardRun = {
   id: string
@@ -20,8 +20,15 @@ type DashboardRun = {
   created_at: string
 }
 
-export default async function DashboardPage() {
+type DashboardPageProps = {
+  searchParams?: Promise<{
+    created?: string
+  }>
+}
+
+export default async function DashboardPage({ searchParams }: DashboardPageProps) {
   const supabase = await createClient()
+  const resolvedSearchParams = await searchParams
   const {
     data: { user },
   } = await supabase.auth.getUser()
@@ -56,10 +63,12 @@ export default async function DashboardPage() {
         }
       />
 
+      {resolvedSearchParams?.created === '1' ? (
+        <StatusBanner tone="success">New run saved successfully.</StatusBanner>
+      ) : null}
+
       {error ? (
-        <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-          Unable to load your runs right now. {error.message}
-        </div>
+        <StatusBanner tone="error">Unable to load your runs right now. {error.message}</StatusBanner>
       ) : null}
 
       <div className="space-y-10 lg:space-y-12">

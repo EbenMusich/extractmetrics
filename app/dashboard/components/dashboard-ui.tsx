@@ -35,6 +35,22 @@ export const tableRowClass =
   'border-b border-gray-100 transition-colors last:border-b-0 hover:bg-gray-50'
 export const tableEmptyCellClass = 'px-5 py-10 text-center text-sm text-gray-500'
 
+type StatusBannerProps = {
+  tone?: 'success' | 'error' | 'info'
+  children: ReactNode
+}
+
+export function StatusBanner({ tone = 'info', children }: StatusBannerProps) {
+  const toneClass =
+    tone === 'success'
+      ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+      : tone === 'error'
+        ? 'border-red-200 bg-red-50 text-red-700'
+        : 'border-blue-200 bg-blue-50 text-blue-800'
+
+  return <div className={joinClasses('rounded-2xl border px-4 py-3 text-sm', toneClass)}>{children}</div>
+}
+
 type SkeletonBlockProps = {
   className?: string
 }

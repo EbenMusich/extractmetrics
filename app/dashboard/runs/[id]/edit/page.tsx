@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import { RunEntryForm } from '@/app/dashboard/components/run-entry-form'
-import { PageHeader } from '@/app/dashboard/components/dashboard-ui'
+import { PageHeader, StatusBanner } from '@/app/dashboard/components/dashboard-ui'
 import { requireUser } from '@/lib/auth/require-user'
 import { createClient } from '@/lib/supabase/server'
 
@@ -33,9 +33,7 @@ export default async function EditRunPage({ params }: EditRunPageProps) {
           description="Update this extraction run and return to your full run history."
         />
 
-        <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-          Unable to load this run right now. {error.message}
-        </div>
+        <StatusBanner tone="error">Unable to load this run right now. {error.message}</StatusBanner>
       </section>
     )
   }
@@ -57,8 +55,8 @@ export default async function EditRunPage({ params }: EditRunPageProps) {
         <RunEntryForm
           mode="edit"
           runId={run.id}
-          title="Run entry"
-          description="Update the basics for this extraction run."
+          title="Edit extraction run"
+          description="Update the recorded run details, measured output, and tracked costs for this extraction."
           submitLabel="Save changes"
           initialValues={{
             run_date: run.run_date ?? '',

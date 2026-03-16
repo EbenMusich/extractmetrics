@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useMemo, useRef, useState } from 'react'
 import { useFormStatus } from 'react-dom'
 import { deleteRunAction } from '@/app/dashboard/actions'
+import { getCostPerGram, getRunYieldPercent } from './analytics-metrics'
 import { filterRunsBySearchTerm } from './run-history-filter'
 import {
   EmptyState,
@@ -33,6 +34,122 @@ type RunHistoryTableProps = {
 
 const RUNS_PER_PAGE = 25
 
+type SortKey =
+  | 'run_date'
+  | 'strain_name'
+  | 'grower_name'
+  | 'output_type'
+  | 'biomass_input_g'
+  | 'output_weight_g'
+  | 'yield_percent'
+  | 'cost_per_g'
+
+type SortDirection = 'asc' | 'desc'
+
+type SortState = {
+  key: SortKey
+  direction: SortDirection
+}
+
+const defaultSortState: SortState = {
+  key: 'run_date',
+  direction: 'desc',
+}
+
+const sortLabels: Record<SortKey, string> = {
+  run_date: 'run date',
+  strain_name: 'strain',
+  grower_name: 'grower',
+  output_type: 'output type',
+  biomass_input_g: 'biomass input',
+  output_weight_g: 'output weight',
+  yield_percent: 'yield',
+  cost_per_g: 'cost per g',
+}
+
+function compareOptionalNumbers(left: number | null | undefined, right: number | null | undefined) {
+  const leftValue = typeof left === 'number' && Number.isFinite(left) ? left : null
+  const rightValue = typeof right === 'number' && Number.isFinite(right) ? right : null
+
+  if (leftValue === null && rightValue === null) {
+    return 0
+  }
+  if (leftValue === null) {
+    return 1
+  }
+  if (rightValue === null) {
+    return -1
+  }
+
+  return leftValue - rightValue
+}
+
+function compareText(left: string | null | undefined, right: string | null | undefined) {
+  return (left?.trim() ?? '').localeCompare(right?.trim() ?? '', undefined, { sensitivity: 'base' })
+}
+
+function sortRuns(runs: RunTableRun[], sortState: SortState) {
+  return [...runs].sort((left, right) => {
+    let comparison = 0
+
+    switch (sortState.key) {
+      case 'run_date':
+        comparison = left.run_date.localeCompare(right.run_date)
+        break
+      case 'strain_name':
+        comparison = compareText(left.strain_name, right.strain_name)
+        break
+      case 'grower_name':
+        comparison = compareText(left.grower_name, right.grower_name)
+        break
+      case 'output_type':
+        comparison = compareText(left.output_type, right.output_type)
+        break
+      case 'biomass_input_g':
+        comparison = compareOptionalNumbers(left.biomass_input_g, right.biomass_input_g)
+        break
+      case 'output_weight_g':
+        comparison = compareOptionalNumbers(left.output_weight_g, right.output_weight_g)
+        break
+      case 'yield_percent':
+        comparison = compareOptionalNumbers(getRunYieldPercent(left), getRunYieldPercent(right))
+        break
+      case 'cost_per_g':
+        comparison = compareOptionalNumbers(getCostPerGram(left), getCostPerGram(right))
+        break
+    }
+
+    if (comparison === 0) {
+      comparison = right.run_date.localeCompare(left.run_date)
+    }
+
+    return sortState.direction === 'asc' ? comparison : -comparison
+  })
+}
+
+function getSortIndicator(isActive: boolean, direction: SortDirection) {
+  if (!isActive) {
+    return '↕'
+  }
+
+  return direction === 'asc' ? '↑' : '↓'
+}
+
+function getNextSortState(currentSort: SortState, key: SortKey): SortState {
+  if (currentSort.key === key) {
+    return {
+      key,
+      direction: currentSort.direction === 'asc' ? 'desc' : 'asc',
+    }
+  }
+
+  return {
+    key,
+    direction:
+      key === 'strain_name' || key === 'grower_name' || key === 'output_type' ? 'asc' : 'desc',
+  }
+}
+
 function DeleteRunButton({ onClick }: { onClick: () => void }) {
   const { pending } = useFormStatus()
 
@@ -41,7 +158,7 @@ function DeleteRunButton({ onClick }: { onClick: () => void }) {
       type="button"
       onClick={onClick}
       disabled={pending}
-      className={`${destructiveButtonClass} px-3 py-1.5 text-xs`}
+      className={`${destructiveButtonClass} px-3 py-1.5 text-sm`}
     >
       {pending ? 'Deleting...' : 'Delete'}
     </button>
@@ -70,8 +187,10 @@ function DeleteRunForm({ runId }: { runId: string }) {
 export function RunHistoryTable({ runs }: RunHistoryTableProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
+  const [sortState, setSortState] = useState<SortState>(defaultSortState)
 
   const filteredRuns = useMemo(() => filterRunsBySearchTerm(runs, searchTerm), [runs, searchTerm])
+  const sortedRuns = useMemo(() => sortRuns(filteredRuns, sortState), [filteredRuns, sortState])
   const exportHref = useMemo(() => {
     const params = new URLSearchParams()
     const normalizedSearchTerm = searchTerm.trim()
@@ -84,11 +203,13 @@ export function RunHistoryTable({ runs }: RunHistoryTableProps) {
     return queryString ? `/dashboard/runs/export?${queryString}` : '/dashboard/runs/export'
   }, [searchTerm])
 
-  const totalPages = Math.max(1, Math.ceil(filteredRuns.length / RUNS_PER_PAGE))
+  const totalPages = Math.max(1, Math.ceil(sortedRuns.length / RUNS_PER_PAGE))
   const visiblePage = Math.min(currentPage, totalPages)
   const startIndex = (visiblePage - 1) * RUNS_PER_PAGE
-  const visibleRuns = filteredRuns.slice(startIndex, startIndex + RUNS_PER_PAGE)
+  const visibleRuns = sortedRuns.slice(startIndex, startIndex + RUNS_PER_PAGE)
   const hasRuns = runs.length > 0
+  const hasFilteredRuns = filteredRuns.length > 0
+  const sortSummary = `${sortState.direction === 'asc' ? 'Ascending' : 'Descending'} by ${sortLabels[sortState.key]}`
 
   return (
     <section className="space-y-5">
@@ -108,33 +229,129 @@ export function RunHistoryTable({ runs }: RunHistoryTableProps) {
 
       <div className={tableWrapperClass}>
         <div className="border-b border-gray-200 px-4 py-4 sm:px-5">
-          <label className="flex w-full flex-col gap-1 text-sm text-gray-600">
-            <span className="font-medium text-gray-700">Search runs</span>
-            <input
-              type="search"
-              value={searchTerm}
-              onChange={(event) => {
-                setSearchTerm(event.target.value)
-                setCurrentPage(1)
-              }}
-              placeholder="Search strain, grower, or output type"
-              className={inputClass}
-            />
-          </label>
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <label className="flex w-full max-w-xl flex-col gap-1 text-sm text-gray-600">
+              <span className="font-medium text-gray-700">Search runs</span>
+              <input
+                type="search"
+                value={searchTerm}
+                onChange={(event) => {
+                  setSearchTerm(event.target.value)
+                  setCurrentPage(1)
+                }}
+                placeholder="Search strain, grower, or output type"
+                className={inputClass}
+              />
+              <span className="text-xs text-gray-500">
+                Matches strain, grower, and output type across your saved runs.
+              </span>
+            </label>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="text-sm text-gray-500">{sortSummary}</p>
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchTerm('')
+                  setCurrentPage(1)
+                }}
+                disabled={!searchTerm.trim()}
+                className={secondaryButtonClass}
+              >
+                Clear search
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="border-b border-gray-100 px-4 py-2 text-xs text-gray-500 sm:hidden">
+          Scroll horizontally to view all columns and actions.
         </div>
 
         <div className="overflow-x-auto">
           <table className={tableClass}>
             <thead className={tableHeadClass}>
               <tr>
-                <th className={textCellClass}>Run Date</th>
-                <th className={textCellClass}>Strain</th>
-                <th className={textCellClass}>Grower</th>
-                <th className={textCellClass}>Output Type</th>
-                <th className={numericCellClass}>Biomass In</th>
-                <th className={numericCellClass}>Output</th>
-                <th className={numericCellClass}>Yield %</th>
-                <th className={numericCellClass}>Cost / g</th>
+                <th className={textCellClass} aria-sort={sortState.key === 'run_date' ? (sortState.direction === 'asc' ? 'ascending' : 'descending') : 'none'}>
+                  <button
+                    type="button"
+                    onClick={() => setSortState((currentSort) => getNextSortState(currentSort, 'run_date'))}
+                    className="inline-flex items-center gap-1 font-semibold uppercase tracking-[0.18em] text-gray-700"
+                  >
+                    <span>Run Date</span>
+                    <span aria-hidden="true">{getSortIndicator(sortState.key === 'run_date', sortState.direction)}</span>
+                  </button>
+                </th>
+                <th className={textCellClass} aria-sort={sortState.key === 'strain_name' ? (sortState.direction === 'asc' ? 'ascending' : 'descending') : 'none'}>
+                  <button
+                    type="button"
+                    onClick={() => setSortState((currentSort) => getNextSortState(currentSort, 'strain_name'))}
+                    className="inline-flex items-center gap-1 font-semibold uppercase tracking-[0.18em] text-gray-700"
+                  >
+                    <span>Strain</span>
+                    <span aria-hidden="true">{getSortIndicator(sortState.key === 'strain_name', sortState.direction)}</span>
+                  </button>
+                </th>
+                <th className={textCellClass} aria-sort={sortState.key === 'grower_name' ? (sortState.direction === 'asc' ? 'ascending' : 'descending') : 'none'}>
+                  <button
+                    type="button"
+                    onClick={() => setSortState((currentSort) => getNextSortState(currentSort, 'grower_name'))}
+                    className="inline-flex items-center gap-1 font-semibold uppercase tracking-[0.18em] text-gray-700"
+                  >
+                    <span>Grower</span>
+                    <span aria-hidden="true">{getSortIndicator(sortState.key === 'grower_name', sortState.direction)}</span>
+                  </button>
+                </th>
+                <th className={textCellClass} aria-sort={sortState.key === 'output_type' ? (sortState.direction === 'asc' ? 'ascending' : 'descending') : 'none'}>
+                  <button
+                    type="button"
+                    onClick={() => setSortState((currentSort) => getNextSortState(currentSort, 'output_type'))}
+                    className="inline-flex items-center gap-1 font-semibold uppercase tracking-[0.18em] text-gray-700"
+                  >
+                    <span>Output Type</span>
+                    <span aria-hidden="true">{getSortIndicator(sortState.key === 'output_type', sortState.direction)}</span>
+                  </button>
+                </th>
+                <th className={numericCellClass} aria-sort={sortState.key === 'biomass_input_g' ? (sortState.direction === 'asc' ? 'ascending' : 'descending') : 'none'}>
+                  <button
+                    type="button"
+                    onClick={() => setSortState((currentSort) => getNextSortState(currentSort, 'biomass_input_g'))}
+                    className="inline-flex items-center justify-end gap-1 font-semibold uppercase tracking-[0.18em] text-gray-700"
+                  >
+                    <span>Biomass In</span>
+                    <span aria-hidden="true">{getSortIndicator(sortState.key === 'biomass_input_g', sortState.direction)}</span>
+                  </button>
+                </th>
+                <th className={numericCellClass} aria-sort={sortState.key === 'output_weight_g' ? (sortState.direction === 'asc' ? 'ascending' : 'descending') : 'none'}>
+                  <button
+                    type="button"
+                    onClick={() => setSortState((currentSort) => getNextSortState(currentSort, 'output_weight_g'))}
+                    className="inline-flex items-center justify-end gap-1 font-semibold uppercase tracking-[0.18em] text-gray-700"
+                  >
+                    <span>Output</span>
+                    <span aria-hidden="true">{getSortIndicator(sortState.key === 'output_weight_g', sortState.direction)}</span>
+                  </button>
+                </th>
+                <th className={numericCellClass} aria-sort={sortState.key === 'yield_percent' ? (sortState.direction === 'asc' ? 'ascending' : 'descending') : 'none'}>
+                  <button
+                    type="button"
+                    onClick={() => setSortState((currentSort) => getNextSortState(currentSort, 'yield_percent'))}
+                    className="inline-flex items-center justify-end gap-1 font-semibold uppercase tracking-[0.18em] text-gray-700"
+                  >
+                    <span>Yield %</span>
+                    <span aria-hidden="true">{getSortIndicator(sortState.key === 'yield_percent', sortState.direction)}</span>
+                  </button>
+                </th>
+                <th className={numericCellClass} aria-sort={sortState.key === 'cost_per_g' ? (sortState.direction === 'asc' ? 'ascending' : 'descending') : 'none'}>
+                  <button
+                    type="button"
+                    onClick={() => setSortState((currentSort) => getNextSortState(currentSort, 'cost_per_g'))}
+                    className="inline-flex items-center justify-end gap-1 font-semibold uppercase tracking-[0.18em] text-gray-700"
+                  >
+                    <span>Cost / g</span>
+                    <span aria-hidden="true">{getSortIndicator(sortState.key === 'cost_per_g', sortState.direction)}</span>
+                  </button>
+                </th>
                 <th className="px-4 py-3 text-right sm:px-5">Actions</th>
               </tr>
             </thead>
@@ -174,7 +391,7 @@ export function RunHistoryTable({ runs }: RunHistoryTableProps) {
                       <div className="flex justify-end gap-2">
                         <Link
                           href={`/dashboard/runs/${run.id}/edit`}
-                          className={`${secondaryButtonClass} px-3 py-1.5 text-xs`}
+                          className={`${secondaryButtonClass} px-3 py-1.5 text-sm`}
                         >
                           Edit
                         </Link>
@@ -189,11 +406,11 @@ export function RunHistoryTable({ runs }: RunHistoryTableProps) {
         </div>
       </div>
 
-      {hasRuns ? (
+      {hasRuns && hasFilteredRuns ? (
         <div className={`${tableWrapperClass} flex flex-col gap-3 px-4 py-4 text-sm text-gray-600 sm:flex-row sm:items-center sm:justify-between sm:px-5`}>
           <p>
-            Showing {filteredRuns.length === 0 ? 0 : startIndex + 1}-{Math.min(startIndex + RUNS_PER_PAGE, filteredRuns.length)} of{' '}
-            {filteredRuns.length} runs
+            Showing {startIndex + 1}-{Math.min(startIndex + RUNS_PER_PAGE, sortedRuns.length)} of {sortedRuns.length}{' '}
+            matching runs
           </p>
 
           <div className="flex items-center gap-2">
@@ -206,7 +423,7 @@ export function RunHistoryTable({ runs }: RunHistoryTableProps) {
               Previous
             </button>
             <span>
-              Page {filteredRuns.length === 0 ? 0 : visiblePage} of {filteredRuns.length === 0 ? 0 : totalPages}
+              Page {visiblePage} of {totalPages}
             </span>
             <button
               type="button"

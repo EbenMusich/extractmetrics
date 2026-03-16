@@ -76,6 +76,15 @@ function readRunId(formData: FormData) {
   return runId || null
 }
 
+function appendQueryFlag(path: string, key: string) {
+  const [pathname, search = ''] = path.split('?')
+  const params = new URLSearchParams(search)
+  params.set(key, '1')
+  const queryString = params.toString()
+
+  return queryString ? `${pathname}?${queryString}` : pathname
+}
+
 function calculateLaborCost(laborMinutes: number, laborRate: number) {
   return (laborMinutes / 60) * laborRate
 }
@@ -262,7 +271,7 @@ export async function createRunAction(
   }
 
   if (successRedirectTo) {
-    redirect(successRedirectTo)
+    redirect(appendQueryFlag(successRedirectTo, 'created'))
   }
 
   return {
@@ -326,7 +335,7 @@ export async function updateRunAction(
     )
   }
 
-  redirect('/dashboard/runs')
+  redirect(appendQueryFlag('/dashboard/runs', 'updated'))
 }
 
 export async function deleteRunAction(formData: FormData) {
@@ -362,5 +371,5 @@ export async function deleteRunAction(formData: FormData) {
   }
 
   revalidateRunPages()
-  redirect('/dashboard/runs')
+  redirect(appendQueryFlag('/dashboard/runs', 'deleted'))
 }
