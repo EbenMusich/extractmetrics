@@ -108,13 +108,14 @@ export default async function Home() {
                 </span>
               </div>
 
-              <div className="mt-5 overflow-hidden rounded-2xl">
+              <div className="relative mt-5 px-1 py-2 sm:px-2">
+                <div className="absolute inset-x-6 inset-y-8 rounded-[2rem] bg-gradient-to-br from-emerald-100/60 via-sky-100/40 to-transparent blur-2xl" />
                 <Image
                   src="/dashboard-preview.png"
                   alt="ExtractMetrics dashboard showing extraction run analytics"
                   width={1200}
                   height={800}
-                  className="h-auto w-full rounded-xl border shadow-lg"
+                  className="relative h-auto w-full rounded-xl border border-zinc-200/80 shadow-[0_24px_60px_-24px_rgba(15,23,42,0.45)] lg:rotate-[1deg]"
                 />
               </div>
             </div>
@@ -136,7 +137,6 @@ export default async function Home() {
                 key={item.title}
                 className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm"
               >
-                <div className="mb-4 h-10 w-10 rounded-2xl bg-zinc-950/5" />
                 <h3 className="text-lg font-semibold text-zinc-950">{item.title}</h3>
                 <p className="mt-3 text-sm leading-6 text-zinc-600">{item.description}</p>
               </article>
