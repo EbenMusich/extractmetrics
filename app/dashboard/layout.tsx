@@ -1,13 +1,10 @@
 import type { ReactNode } from 'react'
-import { createClient } from '@/lib/supabase/server'
+import { requireUser } from '@/lib/auth/require-user'
 import { DashboardSidebar } from './components/dashboard-sidebar'
 import { UserAccount } from './components/user-account'
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const user = await requireUser()
 
   return (
     <div className="min-h-screen bg-gray-50">

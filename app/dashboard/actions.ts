@@ -68,7 +68,12 @@ function readNumber(formData: FormData, field: string) {
 
 function readRedirectTarget(formData: FormData) {
   const redirectTo = readText(formData, 'success_redirect_to')
-  return redirectTo || null
+
+  if (!redirectTo) {
+    return null
+  }
+
+  return redirectTo.startsWith('/') && !redirectTo.startsWith('//') ? redirectTo : null
 }
 
 function readRunId(formData: FormData) {
