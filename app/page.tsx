@@ -96,29 +96,14 @@ export default async function Home() {
             </div>
           </div>
 
-          <div className="rounded-3xl border border-zinc-200 bg-zinc-50 p-5 shadow-sm sm:p-6">
-            <div className="rounded-2xl border border-zinc-200 bg-white p-5">
-              <div className="flex items-center justify-between border-b border-zinc-100 pb-4">
-                <div>
-                  <p className="text-sm font-semibold text-zinc-950">Dashboard Preview</p>
-                  <p className="text-sm text-zinc-500">Analytics overview</p>
-                </div>
-                <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
-                  Live metrics
-                </span>
-              </div>
-
-              <div className="relative mt-5 px-1 py-2 sm:px-2">
-                <div className="absolute inset-x-6 inset-y-8 rounded-[2rem] bg-gradient-to-br from-emerald-100/60 via-sky-100/40 to-transparent blur-2xl" />
-                <Image
-                  src="/dashboard-preview.png"
-                  alt="ExtractMetrics dashboard showing extraction run analytics"
-                  width={1200}
-                  height={800}
-                  className="relative h-auto w-full rounded-xl border border-zinc-200/80 shadow-[0_24px_60px_-24px_rgba(15,23,42,0.45)] lg:rotate-[1deg]"
-                />
-              </div>
-            </div>
+          <div className="lg:pl-4">
+            <Image
+              src="/dashboard-preview.png"
+              alt="ExtractMetrics dashboard showing extraction run analytics"
+              width={1200}
+              height={800}
+              className="h-auto w-full rounded-xl border border-zinc-200 shadow-[0_24px_50px_-24px_rgba(15,23,42,0.28)]"
+            />
           </div>
         </section>
 
