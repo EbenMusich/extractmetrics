@@ -66,11 +66,11 @@ export default async function EditRunPage({ params }: EditRunPageProps) {
             biomass_input_g: run.biomass_input_g?.toString() ?? '',
             output_weight_g: run.output_weight_g?.toString() ?? '',
             solvent_used_g: run.solvent_used_g?.toString() ?? '',
-            labor_minutes: run.labor_minutes?.toString() ?? '0',
-            labor_rate: run.labor_rate?.toString() ?? '0',
-            material_cost: run.material_cost?.toString() ?? '0',
-            utility_cost: run.utility_cost?.toString() ?? '0',
-            other_cost: run.other_cost?.toString() ?? '0',
+            labor_minutes: run.labor_minutes?.toString() ?? '',
+            labor_rate: run.labor_rate?.toString() ?? '',
+            material_cost: run.material_cost?.toString() ?? '',
+            utility_cost: run.utility_cost?.toString() ?? '',
+            other_cost: run.other_cost?.toString() ?? '',
             notes: run.notes ?? '',
           }}
         />

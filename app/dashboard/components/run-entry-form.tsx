@@ -86,11 +86,11 @@ function createInitialValues(): RunFormValues {
     biomass_input_g: '',
     output_weight_g: '',
     solvent_used_g: '',
-    labor_minutes: '0',
-    labor_rate: '0',
-    material_cost: '0',
-    utility_cost: '0',
-    other_cost: '0',
+    labor_minutes: '',
+    labor_rate: '',
+    material_cost: '',
+    utility_cost: '',
+    other_cost: '',
     notes: '',
   }
 }
@@ -147,41 +147,31 @@ function validateForm(values: RunFormValues): RunFormFieldErrors {
 
   if (!values.output_weight_g.trim()) {
     errors.output_weight_g = 'Output weight is required.'
-  } else if (outputWeight === null || outputWeight <= 0) {
-    errors.output_weight_g = 'Output weight must be greater than 0.'
+  } else if (outputWeight === null || outputWeight < 0) {
+    errors.output_weight_g = 'Output weight must be 0 or greater.'
   }
 
   if (values.solvent_used_g.trim() && (solventUsed === null || solventUsed < 0)) {
     errors.solvent_used_g = 'Solvent used must be 0 or greater.'
   }
 
-  if (!values.labor_minutes.trim()) {
-    errors.labor_minutes = 'Labor minutes is required.'
-  } else if (laborMinutes === null || laborMinutes < 0) {
+  if (values.labor_minutes.trim() && (laborMinutes === null || laborMinutes < 0)) {
     errors.labor_minutes = 'Labor minutes must be 0 or greater.'
   }
 
-  if (!values.labor_rate.trim()) {
-    errors.labor_rate = 'Labor rate is required.'
-  } else if (laborRate === null || laborRate < 0) {
+  if (values.labor_rate.trim() && (laborRate === null || laborRate < 0)) {
     errors.labor_rate = 'Labor rate must be 0 or greater.'
   }
 
-  if (!values.material_cost.trim()) {
-    errors.material_cost = 'Material cost is required.'
-  } else if (materialCost === null || materialCost < 0) {
+  if (values.material_cost.trim() && (materialCost === null || materialCost < 0)) {
     errors.material_cost = 'Material cost must be 0 or greater.'
   }
 
-  if (!values.utility_cost.trim()) {
-    errors.utility_cost = 'Utility cost is required.'
-  } else if (utilityCost === null || utilityCost < 0) {
+  if (values.utility_cost.trim() && (utilityCost === null || utilityCost < 0)) {
     errors.utility_cost = 'Utility cost must be 0 or greater.'
   }
 
-  if (!values.other_cost.trim()) {
-    errors.other_cost = 'Other cost is required.'
-  } else if (otherCost === null || otherCost < 0) {
+  if (values.other_cost.trim() && (otherCost === null || otherCost < 0)) {
     errors.other_cost = 'Other cost must be 0 or greater.'
   }
 
@@ -483,7 +473,7 @@ function RunEntryFormBody({
               name="output_weight_g"
               type="number"
               step="0.01"
-              min="0.01"
+              min="0"
               value={values.output_weight_g}
               onChange={(event) => onChange('output_weight_g', event.target.value)}
               placeholder="0.00"
@@ -515,7 +505,6 @@ function RunEntryFormBody({
             label="Material cost"
             error={fieldErrors.material_cost}
             helper="Enter the material spend in USD. Use 0 if none."
-            required
           >
             <input
               name="material_cost"
@@ -525,7 +514,6 @@ function RunEntryFormBody({
               value={values.material_cost}
               onChange={(event) => onChange('material_cost', event.target.value)}
               placeholder="0.00"
-              required
               aria-invalid={Boolean(fieldErrors.material_cost)}
               className={inputClass}
             />
@@ -534,8 +522,7 @@ function RunEntryFormBody({
           <FieldShell
             label="Labor minutes"
             error={fieldErrors.labor_minutes}
-            helper="Total hands-on time spent on this run."
-            required
+            helper="Optional. Total hands-on time spent on this run. Leave blank to save 0."
           >
             <input
               name="labor_minutes"
@@ -545,7 +532,6 @@ function RunEntryFormBody({
               value={values.labor_minutes}
               onChange={(event) => onChange('labor_minutes', event.target.value)}
               placeholder="0"
-              required
               aria-invalid={Boolean(fieldErrors.labor_minutes)}
               className={inputClass}
             />
@@ -555,7 +541,6 @@ function RunEntryFormBody({
             label="Labor rate ($/hr)"
             error={fieldErrors.labor_rate}
             helper={getLaborCostPreview(values)}
-            required
           >
             <input
               name="labor_rate"
@@ -565,7 +550,6 @@ function RunEntryFormBody({
               value={values.labor_rate}
               onChange={(event) => onChange('labor_rate', event.target.value)}
               placeholder="0.00"
-              required
               aria-invalid={Boolean(fieldErrors.labor_rate)}
               className={inputClass}
             />
@@ -575,7 +559,6 @@ function RunEntryFormBody({
             label="Utility cost"
             error={fieldErrors.utility_cost}
             helper="Enter the utility spend in USD. Use 0 if none."
-            required
           >
             <input
               name="utility_cost"
@@ -585,7 +568,6 @@ function RunEntryFormBody({
               value={values.utility_cost}
               onChange={(event) => onChange('utility_cost', event.target.value)}
               placeholder="0.00"
-              required
               aria-invalid={Boolean(fieldErrors.utility_cost)}
               className={inputClass}
             />
@@ -596,7 +578,6 @@ function RunEntryFormBody({
             error={fieldErrors.other_cost}
             helper={`Equipment, overhead, or miscellaneous costs not captured above. ${getTotalTrackedCostHelper(values)}`}
             className="md:col-span-2"
-            required
           >
             <input
               name="other_cost"
@@ -606,7 +587,6 @@ function RunEntryFormBody({
               value={values.other_cost}
               onChange={(event) => onChange('other_cost', event.target.value)}
               placeholder="0.00"
-              required
               aria-invalid={Boolean(fieldErrors.other_cost)}
               className={inputClass}
             />

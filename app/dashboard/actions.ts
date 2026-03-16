@@ -154,8 +154,8 @@ function validateRunForm(formData: FormData) {
 
   if (values.outputWeightG === null) {
     fieldErrors.output_weight_g = 'Output weight is required.'
-  } else if (!Number.isFinite(values.outputWeightG) || values.outputWeightG <= 0) {
-    fieldErrors.output_weight_g = 'Output weight must be greater than 0.'
+  } else if (!Number.isFinite(values.outputWeightG) || values.outputWeightG < 0) {
+    fieldErrors.output_weight_g = 'Output weight must be 0 or greater.'
   }
 
   if (
@@ -165,41 +165,34 @@ function validateRunForm(formData: FormData) {
     fieldErrors.solvent_used_g = 'Solvent used must be 0 or greater.'
   }
 
-  if (values.laborMinutes === null) {
-    fieldErrors.labor_minutes = 'Labor minutes is required.'
-  } else if (!Number.isFinite(values.laborMinutes) || values.laborMinutes < 0) {
+  if (values.laborMinutes !== null && (!Number.isFinite(values.laborMinutes) || values.laborMinutes < 0)) {
     fieldErrors.labor_minutes = 'Labor minutes must be 0 or greater.'
   }
 
-  if (values.laborRate === null) {
-    fieldErrors.labor_rate = 'Labor rate is required.'
-  } else if (!Number.isFinite(values.laborRate) || values.laborRate < 0) {
+  if (values.laborRate !== null && (!Number.isFinite(values.laborRate) || values.laborRate < 0)) {
     fieldErrors.labor_rate = 'Labor rate must be 0 or greater.'
   }
 
-  if (values.materialCost === null) {
-    fieldErrors.material_cost = 'Material cost is required.'
-  } else if (!Number.isFinite(values.materialCost) || values.materialCost < 0) {
+  if (values.materialCost !== null && (!Number.isFinite(values.materialCost) || values.materialCost < 0)) {
     fieldErrors.material_cost = 'Material cost must be 0 or greater.'
   }
 
-  if (values.utilityCost === null) {
-    fieldErrors.utility_cost = 'Utility cost is required.'
-  } else if (!Number.isFinite(values.utilityCost) || values.utilityCost < 0) {
+  if (values.utilityCost !== null && (!Number.isFinite(values.utilityCost) || values.utilityCost < 0)) {
     fieldErrors.utility_cost = 'Utility cost must be 0 or greater.'
   }
 
-  if (values.otherCost === null) {
-    fieldErrors.other_cost = 'Other cost is required.'
-  } else if (!Number.isFinite(values.otherCost) || values.otherCost < 0) {
+  if (values.otherCost !== null && (!Number.isFinite(values.otherCost) || values.otherCost < 0)) {
     fieldErrors.other_cost = 'Other cost must be 0 or greater.'
   }
 
-  if (
-    Object.keys(fieldErrors).length === 0 &&
-    values.laborMinutes !== null &&
-    values.laborRate !== null
-  ) {
+  values.solventUsedG ??= 0
+  values.laborMinutes ??= 0
+  values.laborRate ??= 0
+  values.materialCost ??= 0
+  values.utilityCost ??= 0
+  values.otherCost ??= 0
+
+  if (Object.keys(fieldErrors).length === 0) {
     values.laborCost = calculateLaborCost(values.laborMinutes, values.laborRate)
   }
 
