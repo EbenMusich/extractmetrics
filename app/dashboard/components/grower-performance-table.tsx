@@ -78,9 +78,9 @@ export function GrowerPerformanceTable({
               <tr>
                 <th className="px-4 py-3 sm:px-5">Grower</th>
                 <th className="px-4 py-3 text-right sm:px-5">Runs</th>
-                <th className="px-4 py-3 text-right sm:px-5">Avg Yield</th>
-                <th className="px-4 py-3 text-right sm:px-5">Avg Cost / g</th>
-                <th className="px-4 py-3 text-right sm:px-5">Avg Output / kg</th>
+                <th className="px-4 py-3 text-right sm:px-5">Average Yield</th>
+                <th className="px-4 py-3 text-right sm:px-5">Average Cost per g Output</th>
+                <th className="px-4 py-3 text-right sm:px-5">Average Output per kg Biomass</th>
                 <th className="px-4 py-3 text-right sm:px-5">Total Output</th>
               </tr>
             </thead>

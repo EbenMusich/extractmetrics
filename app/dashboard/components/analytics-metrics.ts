@@ -4,6 +4,7 @@ export type PerformanceMetricRun = {
   output_type?: string | null
   biomass_input_g?: number | null
   output_weight_g?: number | null
+  solvent_used_g?: number | null
   labor_minutes?: number | null
   labor_rate?: number | null
   labor_cost?: number | null
@@ -34,6 +35,18 @@ export type YieldByStrainDatum = {
   value: number
 }
 
+export type DashboardSummaryMetrics = {
+  totalRuns: number
+  totalOutputWeightG: number
+  totalCost: number
+  yieldPercent: number | null
+  costPerGramOutput: number | null
+  costPerKgBiomass: number | null
+  outputPerKgBiomass: number | null
+  solventPerGramOutput: number | null
+  outputPerGramSolvent: number | null
+}
+
 type MutableAggregatedPerformanceMetric = {
   label: string
   runCount: number
@@ -50,6 +63,14 @@ type MutableAggregatedPerformanceMetric = {
 
 function coerceNumber(value: number | null | undefined) {
   return typeof value === 'number' && Number.isFinite(value) ? value : null
+}
+
+function divideSafely(numerator: number, denominator: number) {
+  if (!Number.isFinite(numerator) || !Number.isFinite(denominator) || denominator <= 0) {
+    return null
+  }
+
+  return numerator / denominator
 }
 
 function getMetricLabel(value: string | null | undefined) {
@@ -114,7 +135,7 @@ export function getCostPerGram(run: PerformanceMetricRun) {
     return null
   }
 
-  return getTotalCost(run) / outputWeightG
+  return divideSafely(getTotalCost(run), outputWeightG)
 }
 
 export function getCostPerKgBiomass(run: PerformanceMetricRun) {
@@ -124,7 +145,7 @@ export function getCostPerKgBiomass(run: PerformanceMetricRun) {
     return null
   }
 
-  return getTotalCost(run) / biomassInputKg
+  return divideSafely(getTotalCost(run), biomassInputKg)
 }
 
 export function getOutputPerKgBiomass(run: PerformanceMetricRun) {
@@ -135,7 +156,29 @@ export function getOutputPerKgBiomass(run: PerformanceMetricRun) {
     return null
   }
 
-  return outputWeightG / biomassInputKg
+  return divideSafely(outputWeightG, biomassInputKg)
+}
+
+export function getSolventPerGramOutput(run: PerformanceMetricRun) {
+  const solventUsedG = coerceNumber(run.solvent_used_g)
+  const outputWeightG = coerceNumber(run.output_weight_g)
+
+  if (solventUsedG === null || solventUsedG < 0 || outputWeightG === null || outputWeightG <= 0) {
+    return null
+  }
+
+  return divideSafely(solventUsedG, outputWeightG)
+}
+
+export function getOutputPerGramSolvent(run: PerformanceMetricRun) {
+  const solventUsedG = coerceNumber(run.solvent_used_g)
+  const outputWeightG = coerceNumber(run.output_weight_g)
+
+  if (solventUsedG === null || solventUsedG <= 0 || outputWeightG === null || outputWeightG < 0) {
+    return null
+  }
+
+  return divideSafely(outputWeightG, solventUsedG)
 }
 
 export function getTotalCost(run: PerformanceMetricRun) {
@@ -229,6 +272,56 @@ export function getYieldByStrainData(
       name,
       value: Number(getYieldPercent(totalOutputG, totalBiomassG).toFixed(2)),
     }))
+}
+
+export function getDashboardSummaryMetrics(runs: PerformanceMetricRun[]): DashboardSummaryMetrics {
+  const totals = runs.reduce(
+    (aggregate, run) => {
+      const biomassInputG = coerceNumber(run.biomass_input_g)
+      const outputWeightG = coerceNumber(run.output_weight_g)
+      const solventUsedG = coerceNumber(run.solvent_used_g)
+
+      aggregate.totalCost += getTotalCost(run)
+
+      if (outputWeightG !== null && outputWeightG >= 0) {
+        aggregate.totalOutputWeightG += outputWeightG
+      }
+
+      if (biomassInputG !== null && biomassInputG > 0) {
+        aggregate.totalBiomassInputG += biomassInputG
+      }
+
+      if (solventUsedG !== null && solventUsedG >= 0) {
+        aggregate.totalSolventUsedG += solventUsedG
+      }
+
+      return aggregate
+    },
+    {
+      totalCost: 0,
+      totalOutputWeightG: 0,
+      totalBiomassInputG: 0,
+      totalSolventUsedG: 0,
+    }
+  )
+
+  const totalBiomassInputKg = divideSafely(totals.totalBiomassInputG, 1000)
+
+  return {
+    totalRuns: runs.length,
+    totalOutputWeightG: Number(totals.totalOutputWeightG.toFixed(2)),
+    totalCost: Number(totals.totalCost.toFixed(2)),
+    yieldPercent: divideSafely(totals.totalOutputWeightG * 100, totals.totalBiomassInputG),
+    costPerGramOutput: divideSafely(totals.totalCost, totals.totalOutputWeightG),
+    costPerKgBiomass:
+      totalBiomassInputKg === null ? null : divideSafely(totals.totalCost, totalBiomassInputKg),
+    outputPerKgBiomass:
+      totalBiomassInputKg === null
+        ? null
+        : divideSafely(totals.totalOutputWeightG, totalBiomassInputKg),
+    solventPerGramOutput: divideSafely(totals.totalSolventUsedG, totals.totalOutputWeightG),
+    outputPerGramSolvent: divideSafely(totals.totalOutputWeightG, totals.totalSolventUsedG),
+  }
 }
 
 export function aggregatePerformanceMetrics(

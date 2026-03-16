@@ -63,8 +63,8 @@ export function CostTrendChart({
 
   return (
     <AnalyticsChartCard
-      title="Cost per gram trend"
-      description="Cost per gram across the selected runs, using the same run set as the yield chart."
+      title="Cost per g output trend"
+      description="Cost per gram of output across the selected runs, using the same run set as the yield chart."
       emptyTitle="No cost trend yet"
       emptyMessage={runs.length === 0 ? emptyMessage : 'Not enough valid data to display this chart.'}
       hasData={data.length > 0}
@@ -107,7 +107,7 @@ export function CostTrendChart({
           <Line
             type="monotone"
             dataKey="value"
-            name="Cost / g"
+            name="Cost per g output"
             stroke="#0f766e"
             strokeWidth={2.5}
             dot={{ r: 3.5, strokeWidth: 2, fill: '#ffffff' }}

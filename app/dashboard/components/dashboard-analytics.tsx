@@ -19,11 +19,7 @@ import { SummaryMetrics } from './summary-metrics'
 import { YieldByStrainChart } from './yield-by-strain-chart'
 import { YieldTrendChart } from './yield-trend-chart'
 import {
-  getCostPerGram,
-  getCostPerKgBiomass,
-  getOutputPerKgBiomass,
-  getRunYieldPercent,
-  getTotalCost,
+  getDashboardSummaryMetrics,
 } from './analytics-metrics'
 import {
   SectionHeader,
@@ -39,6 +35,7 @@ type DashboardAnalyticsRun = {
   output_type: string
   biomass_input_g: number | null
   output_weight_g: number | null
+  solvent_used_g?: number | null
   labor_cost: number | null
   material_cost: number | null
   utility_cost: number | null
@@ -176,41 +173,7 @@ export function DashboardAnalytics({ runs, isLoading = false }: DashboardAnalyti
       return runDate ? runDate >= cutoffDate : true
     })
   }, [filters, runs])
-
-  const yields = filteredRuns.map(getRunYieldPercent).filter((value): value is number => value !== null)
-  const costsPerGram = filteredRuns
-    .map(getCostPerGram)
-    .filter((value): value is number => value !== null)
-  const costsPerKgBiomass = filteredRuns
-    .map(getCostPerKgBiomass)
-    .filter((value): value is number => value !== null)
-  const outputsPerKg = filteredRuns
-    .map(getOutputPerKgBiomass)
-    .filter((value): value is number => value !== null)
-
-  const totalRuns = filteredRuns.length
-  const totalOutputWeight = roundMetric(
-    filteredRuns.reduce((sum, run) => sum + (run.output_weight_g ?? 0), 0)
-  )
-  const totalCost = roundMetric(filteredRuns.reduce((sum, run) => sum + getTotalCost(run), 0))
-  const averageYieldPercent =
-    yields.length > 0
-      ? roundMetric(yields.reduce((sum, value) => sum + value, 0) / yields.length)
-      : 0
-  const averageCostPerGram =
-    costsPerGram.length > 0
-      ? roundMetric(costsPerGram.reduce((sum, value) => sum + value, 0) / costsPerGram.length)
-      : 0
-  const averageCostPerKgBiomass =
-    costsPerKgBiomass.length > 0
-      ? roundMetric(
-          costsPerKgBiomass.reduce((sum, value) => sum + value, 0) / costsPerKgBiomass.length
-        )
-      : 0
-  const averageOutputPerKg =
-    outputsPerKg.length > 0
-      ? roundMetric(outputsPerKg.reduce((sum, value) => sum + value, 0) / outputsPerKg.length)
-      : 0
+  const summaryMetrics = useMemo(() => getDashboardSummaryMetrics(filteredRuns), [filteredRuns])
   const activeFilterLabels = [
     filters.dateRange !== 'all' ? getDashboardDateRangeLabel(filters.dateRange) : null,
     filters.strain ? `Strain: ${filters.strain}` : null,
@@ -245,13 +208,35 @@ export function DashboardAnalytics({ runs, isLoading = false }: DashboardAnalyti
         isLoading={isLoading}
       />
       <SummaryMetrics
-        totalRuns={totalRuns}
-        totalCost={totalCost}
-        averageYieldPercent={averageYieldPercent}
-        averageCostPerGram={averageCostPerGram}
-        averageCostPerKgBiomass={averageCostPerKgBiomass}
-        averageOutputPerKg={averageOutputPerKg}
-        totalOutputWeight={totalOutputWeight}
+        totalRuns={summaryMetrics.totalRuns}
+        totalCost={roundMetric(summaryMetrics.totalCost)}
+        yieldPercent={summaryMetrics.yieldPercent === null ? null : roundMetric(summaryMetrics.yieldPercent)}
+        costPerGramOutput={
+          summaryMetrics.costPerGramOutput === null
+            ? null
+            : roundMetric(summaryMetrics.costPerGramOutput)
+        }
+        costPerKgBiomass={
+          summaryMetrics.costPerKgBiomass === null
+            ? null
+            : roundMetric(summaryMetrics.costPerKgBiomass)
+        }
+        outputPerKgBiomass={
+          summaryMetrics.outputPerKgBiomass === null
+            ? null
+            : roundMetric(summaryMetrics.outputPerKgBiomass)
+        }
+        solventPerGramOutput={
+          summaryMetrics.solventPerGramOutput === null
+            ? null
+            : roundMetric(summaryMetrics.solventPerGramOutput)
+        }
+        outputPerGramSolvent={
+          summaryMetrics.outputPerGramSolvent === null
+            ? null
+            : roundMetric(summaryMetrics.outputPerGramSolvent)
+        }
+        totalOutputWeight={roundMetric(summaryMetrics.totalOutputWeightG)}
         selectionLabel={selectionLabel}
         isLoading={isLoading}
         emptyState={sectionEmptyState}

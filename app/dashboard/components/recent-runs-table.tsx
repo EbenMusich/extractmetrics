@@ -68,10 +68,10 @@ export function RecentRunsTable({
                 <th className={textCellClass}>Run Date</th>
                 <th className={textCellClass}>Strain</th>
                 <th className={textCellClass}>Output Type</th>
-                <th className={numericCellClass}>Biomass In</th>
-                <th className={numericCellClass}>Output</th>
-                <th className={numericCellClass}>Yield %</th>
-                <th className={numericCellClass}>Cost / g</th>
+                <th className={numericCellClass}>Biomass Input</th>
+                <th className={numericCellClass}>Output Weight</th>
+                <th className={numericCellClass}>Yield</th>
+                <th className={numericCellClass}>Cost per g Output</th>
               </tr>
             </thead>
             <tbody className="text-gray-700">

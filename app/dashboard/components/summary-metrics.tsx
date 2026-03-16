@@ -8,10 +8,12 @@ type SummaryEmptyState = {
 type SummaryMetricsProps = {
   totalRuns: number
   totalCost: number
-  averageYieldPercent: number
-  averageCostPerGram: number
-  averageCostPerKgBiomass: number
-  averageOutputPerKg: number
+  yieldPercent: number | null
+  costPerGramOutput: number | null
+  costPerKgBiomass: number | null
+  outputPerKgBiomass: number | null
+  solventPerGramOutput: number | null
+  outputPerGramSolvent: number | null
   totalOutputWeight: number
   selectionLabel: string
   isLoading?: boolean
@@ -35,13 +37,27 @@ const currencyFormatter = new Intl.NumberFormat('en-US', {
   maximumFractionDigits: 2,
 })
 
+function formatMetricValue(
+  value: number | null,
+  formatter: (resolvedValue: number) => string,
+  suffix = ''
+) {
+  if (value === null) {
+    return '-'
+  }
+
+  return `${formatter(value)}${suffix}`
+}
+
 export function SummaryMetrics({
   totalRuns,
   totalCost,
-  averageYieldPercent,
-  averageCostPerGram,
-  averageCostPerKgBiomass,
-  averageOutputPerKg,
+  yieldPercent,
+  costPerGramOutput,
+  costPerKgBiomass,
+  outputPerKgBiomass,
+  solventPerGramOutput,
+  outputPerGramSolvent,
   totalOutputWeight,
   selectionLabel,
   isLoading = false,
@@ -64,24 +80,34 @@ export function SummaryMetrics({
       eyebrow: 'Spend',
     },
     {
-      label: 'Avg Yield',
-      value: `${numberFormatter.format(averageYieldPercent)}%`,
+      label: 'Yield',
+      value: formatMetricValue(yieldPercent, numberFormatter.format, '%'),
       eyebrow: 'Efficiency',
     },
     {
-      label: 'Cost / kg biomass',
-      value: `${currencyFormatter.format(averageCostPerKgBiomass)} / kg`,
-      eyebrow: 'Efficiency',
-    },
-    {
-      label: 'Output / kg biomass',
-      value: `${numberFormatter.format(averageOutputPerKg)} g/kg`,
-      eyebrow: 'Efficiency',
-    },
-    {
-      label: 'Avg Cost / g',
-      value: currencyFormatter.format(averageCostPerGram),
+      label: 'Cost per g output',
+      value: formatMetricValue(costPerGramOutput, currencyFormatter.format),
       eyebrow: 'Spend',
+    },
+    {
+      label: 'Cost per kg biomass',
+      value: formatMetricValue(costPerKgBiomass, currencyFormatter.format, ' / kg'),
+      eyebrow: 'Efficiency',
+    },
+    {
+      label: 'Output per kg biomass',
+      value: formatMetricValue(outputPerKgBiomass, numberFormatter.format, ' g/kg'),
+      eyebrow: 'Efficiency',
+    },
+    {
+      label: 'Solvent per g output',
+      value: formatMetricValue(solventPerGramOutput, numberFormatter.format, ' g/g'),
+      eyebrow: 'Solvent',
+    },
+    {
+      label: 'Output per g solvent',
+      value: formatMetricValue(outputPerGramSolvent, numberFormatter.format, ' g/g'),
+      eyebrow: 'Solvent',
     },
   ]
 
