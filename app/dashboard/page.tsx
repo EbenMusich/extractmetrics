@@ -46,7 +46,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   const runs: DashboardRun[] = data ?? []
 
   return (
-    <div className="space-y-10 lg:space-y-12">
+    <div className="space-y-10 overflow-x-hidden lg:space-y-12">
       <PageHeader
         eyebrow="ExtractMetrics"
         title="Dashboard"
@@ -71,7 +71,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         <StatusBanner tone="error">Unable to load your runs right now. {error.message}</StatusBanner>
       ) : null}
 
-      <div className="space-y-10 lg:space-y-12">
+      <div className="space-y-10 overflow-x-hidden lg:space-y-12">
         <DashboardAnalytics runs={runs} />
       </div>
     </div>

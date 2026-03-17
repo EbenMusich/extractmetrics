@@ -219,7 +219,7 @@ export function DashboardAnalytics({ runs, isLoading = false }: DashboardAnalyti
   const emptyMessage = sectionEmptyState?.description ?? 'Not enough valid data to display this chart.'
 
   return (
-    <div className="space-y-10 xl:space-y-12">
+    <div className="space-y-10 overflow-x-hidden xl:space-y-12">
       <DashboardFilterBar
         value={filters}
         onChange={setFilters}

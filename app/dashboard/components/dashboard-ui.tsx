@@ -27,7 +27,7 @@ export const labelClass = 'text-sm font-medium text-gray-900'
 export const helperTextClass = 'text-xs text-gray-500'
 export const errorTextClass = 'text-sm text-red-600'
 
-export const tableWrapperClass = `${dashboardSurfaceClass} overflow-hidden`
+export const tableWrapperClass = `${dashboardSurfaceClass} w-full overflow-hidden`
 export const tableClass = 'min-w-full text-sm text-gray-700'
 export const tableHeadClass =
   'border-b border-gray-200 bg-gray-50/90 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-700'

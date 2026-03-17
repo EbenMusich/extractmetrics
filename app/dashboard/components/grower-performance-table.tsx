@@ -4,51 +4,15 @@ import {
   aggregatePerformanceMetrics,
   type PerformanceMetricRun,
 } from './analytics-metrics'
-import {
-  EmptyState,
-  SectionHeader,
-  tableClass,
-  tableHeadClass,
-  tableRowClass,
-  tableWrapperClass,
-} from './dashboard-ui'
-import { formatGramsPerKg } from './run-table-formatters'
-import { toSafeNumber } from './safe-number'
+import { SectionHeader } from './dashboard-ui'
+import { ResponsiveDashboardTable } from './responsive-dashboard-table'
+import { formatCurrency, formatGrams, formatGramsPerKg, formatPercent } from './run-table-formatters'
 
 type GrowerPerformanceRun = PerformanceMetricRun
 
 type GrowerPerformanceTableProps = {
   runs: GrowerPerformanceRun[]
   emptyMessage?: string
-}
-
-const percentFormatter = new Intl.NumberFormat('en-US', {
-  minimumFractionDigits: 1,
-  maximumFractionDigits: 1,
-})
-
-const gramsFormatter = new Intl.NumberFormat('en-US', {
-  minimumFractionDigits: 1,
-  maximumFractionDigits: 1,
-})
-
-const currencyFormatter = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-})
-
-function formatPercent(value: number | null) {
-  return `${percentFormatter.format(toSafeNumber(value))}%`
-}
-
-function formatCurrency(value: number | null) {
-  return currencyFormatter.format(toSafeNumber(value))
-}
-
-function formatGrams(value: number) {
-  return `${gramsFormatter.format(toSafeNumber(value))} g`
 }
 
 export function GrowerPerformanceTable({
@@ -64,52 +28,68 @@ export function GrowerPerformanceTable({
         description="Aggregated yield, cost, and output by grower across your saved runs."
       />
 
-      <div className={tableWrapperClass}>
-        <div className="overflow-x-auto">
-          <table className={tableClass}>
-            <thead className={tableHeadClass}>
-              <tr>
-                <th className="px-4 py-3 sm:px-5">Grower</th>
-                <th className="px-4 py-3 text-right sm:px-5">Runs</th>
-                <th className="px-4 py-3 text-right sm:px-5">Average Yield</th>
-                <th className="px-4 py-3 text-right sm:px-5">Average Cost per g Output</th>
-                <th className="px-4 py-3 text-right sm:px-5">Average Output per kg Biomass</th>
-                <th className="px-4 py-3 text-right sm:px-5">Total Output</th>
-              </tr>
-            </thead>
-            <tbody className="text-sm">
-              {rows.length === 0 ? (
-                <tr>
-                  <td className="px-4 py-6 sm:px-5" colSpan={6}>
-                    <EmptyState compact title="No grower data yet" description={emptyMessage} />
-                  </td>
-                </tr>
-              ) : (
-                rows.map((row) => (
-                  <tr key={row.label} className={tableRowClass}>
-                    <td className="px-4 py-3 font-medium text-gray-900 sm:px-5">{row.label}</td>
-                    <td className="px-4 py-3 text-right tabular-nums text-gray-700 sm:px-5">
-                      {row.runCount}
-                    </td>
-                    <td className="px-4 py-3 text-right tabular-nums text-gray-700 sm:px-5">
-                      {formatPercent(row.averageYieldPercent)}
-                    </td>
-                    <td className="px-4 py-3 text-right tabular-nums text-gray-700 sm:px-5">
-                      {formatCurrency(row.averageCostPerGram)}
-                    </td>
-                    <td className="px-4 py-3 text-right tabular-nums text-gray-700 sm:px-5">
-                      {formatGramsPerKg(row.averageOutputPerKg)}
-                    </td>
-                    <td className="px-4 py-3 text-right tabular-nums text-gray-700 sm:px-5">
-                      {formatGrams(row.totalOutputG)}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <ResponsiveDashboardTable
+        columns={[
+          { header: 'Grower', className: 'px-4 py-3 sm:px-5' },
+          { header: 'Runs', className: 'px-4 py-3 text-right sm:px-5' },
+          { header: 'Average Yield', className: 'px-4 py-3 text-right sm:px-5' },
+          { header: 'Average Cost per g Output', className: 'px-4 py-3 text-right sm:px-5' },
+          { header: 'Average Output per kg Biomass', className: 'px-4 py-3 text-right sm:px-5' },
+          { header: 'Total Output', className: 'px-4 py-3 text-right sm:px-5' },
+        ]}
+        rows={rows.map((row) => ({
+          key: row.label,
+          primaryLabel: row.label,
+          desktopCells: [
+            { content: row.label, className: 'px-4 py-3 font-medium text-gray-900 sm:px-5' },
+            {
+              content: row.runCount,
+              className: 'px-4 py-3 text-right tabular-nums text-gray-700 sm:px-5',
+            },
+            {
+              content: formatPercent(row.averageYieldPercent),
+              className: 'px-4 py-3 text-right tabular-nums text-gray-700 sm:px-5',
+            },
+            {
+              content: formatCurrency(row.averageCostPerGram),
+              className: 'px-4 py-3 text-right tabular-nums text-gray-700 sm:px-5',
+            },
+            {
+              content: formatGramsPerKg(row.averageOutputPerKg),
+              className: 'px-4 py-3 text-right tabular-nums text-gray-700 sm:px-5',
+            },
+            {
+              content: formatGrams(row.totalOutputG),
+              className: 'px-4 py-3 text-right tabular-nums text-gray-700 sm:px-5',
+            },
+          ],
+          mobileFields: [
+            { label: 'Runs', value: row.runCount, valueClassName: 'tabular-nums' },
+            {
+              label: 'Average Yield',
+              value: formatPercent(row.averageYieldPercent),
+              valueClassName: 'tabular-nums',
+            },
+            {
+              label: 'Average Cost per g Output',
+              value: formatCurrency(row.averageCostPerGram),
+              valueClassName: 'tabular-nums',
+            },
+            {
+              label: 'Average Output per kg Biomass',
+              value: formatGramsPerKg(row.averageOutputPerKg),
+              valueClassName: 'tabular-nums',
+            },
+            {
+              label: 'Total Output',
+              value: formatGrams(row.totalOutputG),
+              valueClassName: 'tabular-nums',
+            },
+          ],
+        }))}
+        emptyStateTitle="No grower data yet"
+        emptyMessage={emptyMessage}
+      />
     </section>
   )
 }

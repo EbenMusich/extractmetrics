@@ -9,15 +9,8 @@ import {
   textCellClass,
   type RunTableRun,
 } from './run-table-formatters'
-import {
-  EmptyState,
-  SectionHeader,
-  secondaryButtonClass,
-  tableClass,
-  tableHeadClass,
-  tableRowClass,
-  tableWrapperClass,
-} from './dashboard-ui'
+import { SectionHeader, secondaryButtonClass } from './dashboard-ui'
+import { ResponsiveDashboardTable } from './responsive-dashboard-table'
 
 type RecentRun = RunTableRun
 
@@ -28,18 +21,40 @@ type RecentRunsTableProps = {
 
 const MAX_VISIBLE_RUNS = 15
 
-function RecentRunsRow({ run }: { run: RecentRun }) {
-  return (
-    <tr className={tableRowClass}>
-      <td className={textCellClass}>{formatDate(run.run_date)}</td>
-      <td className={textCellClass}>{formatText(run.strain_name)}</td>
-      <td className={textCellClass}>{formatText(run.output_type)}</td>
-      <td className={numericCellClass}>{formatGrams(run.biomass_input_g)}</td>
-      <td className={numericCellClass}>{formatGrams(run.output_weight_g)}</td>
-      <td className={numericCellClass}>{getFormattedYieldPercent(run)}</td>
-      <td className={numericCellClass}>{getFormattedCostPerGram(run)}</td>
-    </tr>
-  )
+function getRecentRunsRow(run: RecentRun) {
+  return {
+    key: run.id,
+    primaryLabel: formatDate(run.run_date),
+    desktopCells: [
+      { content: formatDate(run.run_date), className: textCellClass },
+      { content: formatText(run.strain_name), className: textCellClass },
+      { content: formatText(run.output_type), className: textCellClass },
+      { content: formatGrams(run.biomass_input_g), className: numericCellClass },
+      { content: formatGrams(run.output_weight_g), className: numericCellClass },
+      { content: getFormattedYieldPercent(run), className: numericCellClass },
+      { content: getFormattedCostPerGram(run), className: numericCellClass },
+    ],
+    mobileFields: [
+      { label: 'Strain', value: formatText(run.strain_name) },
+      { label: 'Output Type', value: formatText(run.output_type) },
+      {
+        label: 'Biomass Input',
+        value: formatGrams(run.biomass_input_g),
+        valueClassName: 'tabular-nums',
+      },
+      {
+        label: 'Output Weight',
+        value: formatGrams(run.output_weight_g),
+        valueClassName: 'tabular-nums',
+      },
+      { label: 'Yield', value: getFormattedYieldPercent(run), valueClassName: 'tabular-nums' },
+      {
+        label: 'Cost per g Output',
+        value: getFormattedCostPerGram(run),
+        valueClassName: 'tabular-nums',
+      },
+    ],
+  }
 }
 
 export function RecentRunsTable({
@@ -60,37 +75,20 @@ export function RecentRunsTable({
         }
       />
 
-      <div className={tableWrapperClass}>
-        <div className="border-b border-gray-100 px-4 py-2 text-xs text-gray-500 sm:hidden">
-          Scroll horizontally to view all recent run columns.
-        </div>
-        <div className="overflow-x-auto">
-          <table className={tableClass}>
-            <thead className={tableHeadClass}>
-              <tr>
-                <th className={textCellClass}>Run Date</th>
-                <th className={textCellClass}>Strain</th>
-                <th className={textCellClass}>Output Type</th>
-                <th className={numericCellClass}>Biomass Input</th>
-                <th className={numericCellClass}>Output Weight</th>
-                <th className={numericCellClass}>Yield</th>
-                <th className={numericCellClass}>Cost per g Output</th>
-              </tr>
-            </thead>
-            <tbody className="text-gray-700">
-              {visibleRuns.length === 0 ? (
-                <tr>
-                  <td className="px-4 py-6 sm:px-5" colSpan={7}>
-                    <EmptyState compact title="No recent runs" description={emptyMessage} />
-                  </td>
-                </tr>
-              ) : (
-                visibleRuns.map((run) => <RecentRunsRow key={run.id} run={run} />)
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <ResponsiveDashboardTable
+        columns={[
+          { header: 'Run Date', className: textCellClass },
+          { header: 'Strain', className: textCellClass },
+          { header: 'Output Type', className: textCellClass },
+          { header: 'Biomass Input', className: numericCellClass },
+          { header: 'Output Weight', className: numericCellClass },
+          { header: 'Yield', className: numericCellClass },
+          { header: 'Cost per g Output', className: numericCellClass },
+        ]}
+        rows={visibleRuns.map(getRecentRunsRow)}
+        emptyStateTitle="No recent runs"
+        emptyMessage={emptyMessage}
+      />
     </section>
   )
 }
