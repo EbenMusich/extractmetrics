@@ -41,7 +41,7 @@ export type RunFormValues = {
   solvent_used_g: string
   labor_minutes: string
   labor_rate: string
-  material_cost: string
+  costPerLb: string
   utility_cost: string
   other_cost: string
   notes: string
@@ -71,6 +71,8 @@ const percentFormatter = new Intl.NumberFormat('en-US', {
   maximumFractionDigits: 1,
 })
 
+const GRAMS_PER_POUND = 453.592
+
 function getTodayDateValue() {
   const today = new Date()
   today.setMinutes(today.getMinutes() - today.getTimezoneOffset())
@@ -88,7 +90,7 @@ function createInitialValues(): RunFormValues {
     solvent_used_g: '',
     labor_minutes: '',
     labor_rate: '',
-    material_cost: '',
+    costPerLb: '',
     utility_cost: '',
     other_cost: '',
     notes: '',
@@ -108,11 +110,16 @@ function mergeInitialValues(initialValues?: Partial<RunFormValues>): RunFormValu
     solvent_used_g: initialValues?.solvent_used_g ?? defaults.solvent_used_g,
     labor_minutes: initialValues?.labor_minutes ?? defaults.labor_minutes,
     labor_rate: initialValues?.labor_rate ?? defaults.labor_rate,
-    material_cost: initialValues?.material_cost ?? defaults.material_cost,
+    costPerLb: initialValues?.costPerLb ?? defaults.costPerLb,
     utility_cost: initialValues?.utility_cost ?? defaults.utility_cost,
     other_cost: initialValues?.other_cost ?? defaults.other_cost,
     notes: initialValues?.notes ?? defaults.notes,
   }
+}
+
+function calculateMaterialCost(biomassInputG: number, costPerLb: number) {
+  const biomassLb = biomassInputG / GRAMS_PER_POUND
+  return toSafeNumber(biomassLb * costPerLb)
 }
 
 function validateForm(values: RunFormValues): RunFormFieldErrors {
@@ -122,7 +129,7 @@ function validateForm(values: RunFormValues): RunFormFieldErrors {
   const solventUsed = coerceFiniteNumber(values.solvent_used_g)
   const laborMinutes = coerceFiniteNumber(values.labor_minutes)
   const laborRate = coerceFiniteNumber(values.labor_rate)
-  const materialCost = coerceFiniteNumber(values.material_cost)
+  const costPerLb = coerceFiniteNumber(values.costPerLb)
   const utilityCost = coerceFiniteNumber(values.utility_cost)
   const otherCost = coerceFiniteNumber(values.other_cost)
 
@@ -163,8 +170,8 @@ function validateForm(values: RunFormValues): RunFormFieldErrors {
     errors.labor_rate = 'Labor rate must be 0 or greater.'
   }
 
-  if (values.material_cost.trim() && (materialCost === null || materialCost < 0)) {
-    errors.material_cost = 'Material cost must be 0 or greater.'
+  if (values.costPerLb.trim() && (costPerLb === null || costPerLb < 0)) {
+    errors.cost_per_lb = 'Material cost per pound must be 0 or greater.'
   }
 
   if (values.utility_cost.trim() && (utilityCost === null || utilityCost < 0)) {
@@ -228,10 +235,29 @@ function getLaborCostPreview(values: RunFormValues) {
   return `${currencyFormatter.format(laborCost)} calculated labor cost from ${laborMinutes} min at ${currencyFormatter.format(laborRate)}/hr.`
 }
 
+function getMaterialCostPreview(values: RunFormValues) {
+  const biomassInput = readNumericValue(values.biomass_input_g)
+  const costPerLb = readNumericValue(values.costPerLb)
+
+  if (biomassInput === null || costPerLb === null || biomassInput <= 0 || costPerLb < 0) {
+    return 'Enter the material cost per pound in USD. Total material cost is calculated automatically.'
+  }
+
+  const biomassLb = toSafeNumber(biomassInput / GRAMS_PER_POUND)
+  const materialCost = calculateMaterialCost(biomassInput, costPerLb)
+
+  return `${currencyFormatter.format(materialCost)} calculated material cost from ${roundNumber(biomassLb, 2)} lb at ${currencyFormatter.format(costPerLb)}/lb.`
+}
+
 function getTotalTrackedCostHelper(values: RunFormValues) {
   const laborMinutes = readNumericValue(values.labor_minutes) ?? 0
   const laborRate = readNumericValue(values.labor_rate) ?? 0
-  const materialCost = readNumericValue(values.material_cost) ?? 0
+  const biomassInput = readNumericValue(values.biomass_input_g)
+  const costPerLb = readNumericValue(values.costPerLb)
+  const materialCost =
+    biomassInput !== null && costPerLb !== null && biomassInput > 0 && costPerLb >= 0
+      ? calculateMaterialCost(biomassInput, costPerLb)
+      : 0
   const utilityCost = readNumericValue(values.utility_cost) ?? 0
   const otherCost = readNumericValue(values.other_cost) ?? 0
   const totalTrackedCost = toSafeNumber(
@@ -502,19 +528,19 @@ function RunEntryFormBody({
           </FieldShell>
 
           <FieldShell
-            label="Material cost"
-            error={fieldErrors.material_cost}
-            helper="Enter the material spend in USD. Use 0 if none."
+            label="Material Cost ($ / lb)"
+            error={fieldErrors.cost_per_lb}
+            helper={getMaterialCostPreview(values)}
           >
             <input
-              name="material_cost"
+              name="cost_per_lb"
               type="number"
               step="0.01"
               min="0"
-              value={values.material_cost}
-              onChange={(event) => onChange('material_cost', event.target.value)}
+              value={values.costPerLb}
+              onChange={(event) => onChange('costPerLb', event.target.value)}
               placeholder="0.00"
-              aria-invalid={Boolean(fieldErrors.material_cost)}
+              aria-invalid={Boolean(fieldErrors.cost_per_lb)}
               className={inputClass}
             />
           </FieldShell>

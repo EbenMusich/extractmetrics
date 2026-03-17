@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import { RunEntryForm } from '@/app/dashboard/components/run-entry-form'
+import { roundNumber, toSafeNumber } from '@/app/dashboard/components/safe-number'
 import { PageHeader, StatusBanner } from '@/app/dashboard/components/dashboard-ui'
 import { requireUser } from '@/lib/auth/require-user'
 import { createClient } from '@/lib/supabase/server'
@@ -10,6 +11,30 @@ type EditRunPageProps = {
   }>
 }
 
+function getInitialCostPerLb(
+  costPerLb: number | null,
+  materialCost: number | null,
+  biomassInputG: number | null
+) {
+  if (typeof costPerLb === 'number' && Number.isFinite(costPerLb)) {
+    return costPerLb.toString()
+  }
+
+  if (
+    typeof materialCost === 'number' &&
+    Number.isFinite(materialCost) &&
+    typeof biomassInputG === 'number' &&
+    Number.isFinite(biomassInputG) &&
+    biomassInputG > 0
+  ) {
+    const biomassLb = biomassInputG / 453.592
+    const derivedCostPerLb = roundNumber(toSafeNumber(materialCost / biomassLb), 2)
+    return derivedCostPerLb.toString()
+  }
+
+  return ''
+}
+
 export default async function EditRunPage({ params }: EditRunPageProps) {
   const user = await requireUser()
   const { id } = await params
@@ -17,7 +42,7 @@ export default async function EditRunPage({ params }: EditRunPageProps) {
   const { data: run, error } = await supabase
     .from('runs')
     .select(
-      'id, run_date, output_type, strain_name, grower_name, biomass_input_g, output_weight_g, solvent_used_g, labor_minutes, labor_rate, material_cost, utility_cost, other_cost, notes'
+      'id, run_date, output_type, strain_name, grower_name, biomass_input_g, output_weight_g, solvent_used_g, labor_minutes, labor_rate, material_cost, cost_per_lb, utility_cost, other_cost, notes'
     )
     .eq('id', id)
     .eq('user_id', user.id)
@@ -68,7 +93,11 @@ export default async function EditRunPage({ params }: EditRunPageProps) {
             solvent_used_g: run.solvent_used_g?.toString() ?? '',
             labor_minutes: run.labor_minutes?.toString() ?? '',
             labor_rate: run.labor_rate?.toString() ?? '',
-            material_cost: run.material_cost?.toString() ?? '',
+            costPerLb: getInitialCostPerLb(
+              run.cost_per_lb ?? null,
+              run.material_cost ?? null,
+              run.biomass_input_g ?? null
+            ),
             utility_cost: run.utility_cost?.toString() ?? '',
             other_cost: run.other_cost?.toString() ?? '',
             notes: run.notes ?? '',

@@ -20,7 +20,7 @@ export type CreateRunFormState = {
       | 'solvent_used_g'
       | 'labor_minutes'
       | 'labor_rate'
-      | 'material_cost'
+      | 'cost_per_lb'
       | 'utility_cost'
       | 'other_cost',
       string
@@ -45,8 +45,9 @@ type RunFormValues = {
   solventUsedG: number | null
   laborMinutes: number | null
   laborRate: number | null
+  costPerLb: number | null
   laborCost: number
-  materialCost: number | null
+  materialCost: number
   utilityCost: number | null
   otherCost: number | null
   notes: string
@@ -94,6 +95,11 @@ function calculateLaborCost(laborMinutes: number, laborRate: number) {
   return toSafeNumber((laborMinutes / 60) * laborRate)
 }
 
+function calculateMaterialCost(biomassInputG: number, costPerLb: number) {
+  const biomassLb = biomassInputG / 453.592
+  return toSafeNumber(biomassLb * costPerLb)
+}
+
 function createFieldErrorState(
   previousState: CreateRunFormState,
   fieldErrors: CreateRunFormState['fieldErrors']
@@ -130,8 +136,9 @@ function validateRunForm(formData: FormData) {
     solventUsedG: readNumber(formData, 'solvent_used_g'),
     laborMinutes: readNumber(formData, 'labor_minutes'),
     laborRate: readNumber(formData, 'labor_rate'),
+    costPerLb: readNumber(formData, 'cost_per_lb'),
     laborCost: 0,
-    materialCost: readNumber(formData, 'material_cost'),
+    materialCost: 0,
     utilityCost: readNumber(formData, 'utility_cost'),
     otherCost: readNumber(formData, 'other_cost'),
   }
@@ -178,8 +185,8 @@ function validateRunForm(formData: FormData) {
     fieldErrors.labor_rate = 'Labor rate must be 0 or greater.'
   }
 
-  if (values.materialCost !== null && (!Number.isFinite(values.materialCost) || values.materialCost < 0)) {
-    fieldErrors.material_cost = 'Material cost must be 0 or greater.'
+  if (values.costPerLb !== null && (!Number.isFinite(values.costPerLb) || values.costPerLb < 0)) {
+    fieldErrors.cost_per_lb = 'Material cost per pound must be 0 or greater.'
   }
 
   if (values.utilityCost !== null && (!Number.isFinite(values.utilityCost) || values.utilityCost < 0)) {
@@ -193,12 +200,13 @@ function validateRunForm(formData: FormData) {
   values.solventUsedG ??= 0
   values.laborMinutes ??= 0
   values.laborRate ??= 0
-  values.materialCost ??= 0
+  values.costPerLb ??= 0
   values.utilityCost ??= 0
   values.otherCost ??= 0
 
   if (Object.keys(fieldErrors).length === 0) {
     values.laborCost = calculateLaborCost(values.laborMinutes, values.laborRate)
+    values.materialCost = calculateMaterialCost(values.biomassInputG ?? 0, values.costPerLb)
   }
 
   return { values, fieldErrors }
@@ -216,7 +224,8 @@ function buildRunPayload(userId: string, values: RunFormValues) {
     labor_minutes: values.laborMinutes ?? 0,
     labor_rate: values.laborRate ?? 0,
     labor_cost: toSafeNumber(values.laborCost),
-    material_cost: values.materialCost ?? 0,
+    material_cost: values.materialCost,
+    cost_per_lb: values.costPerLb ?? 0,
     utility_cost: values.utilityCost ?? 0,
     other_cost: values.otherCost ?? 0,
     output_type: values.outputType,
