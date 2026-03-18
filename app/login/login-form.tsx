@@ -59,6 +59,7 @@ export function LoginForm({ confirmationError }: LoginFormProps) {
           type="email"
           placeholder="Email"
           required
+          autoComplete="email"
           disabled={isSubmitting}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -69,11 +70,21 @@ export function LoginForm({ confirmationError }: LoginFormProps) {
           type="password"
           placeholder="Password"
           required
+          autoComplete="current-password"
           disabled={isSubmitting}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           className="rounded-xl border border-zinc-300 px-3 py-2 disabled:cursor-not-allowed disabled:bg-zinc-50"
         />
+
+        <div className="flex justify-end">
+          <Link
+            href="/forgot-password"
+            className="text-sm font-medium text-zinc-700 underline underline-offset-4 transition hover:text-zinc-950"
+          >
+            Forgot password?
+          </Link>
+        </div>
 
         <button
           type="submit"
@@ -96,7 +107,8 @@ export function LoginForm({ confirmationError }: LoginFormProps) {
 
         {!error && !confirmationError ? (
           <p className="text-xs text-zinc-500">
-            If you just signed up, confirm your email before trying to sign in.
+            If you just signed up, confirm your email first. We&apos;ll take you into the app
+            after confirmation whenever possible.
           </p>
         ) : null}
       </form>

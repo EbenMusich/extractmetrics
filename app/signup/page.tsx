@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { getAuthErrorMessage } from '@/lib/auth/get-auth-error-message'
@@ -8,12 +8,37 @@ import { createClient } from '@/lib/supabase/client'
 
 export default function SignupPage() {
   const router = useRouter()
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), [])
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const passwordsMismatch = confirmPassword.length > 0 && password !== confirmPassword
+
+  useEffect(() => {
+    let isMounted = true
+
+    async function redirectAuthenticatedUser() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+
+      if (!isMounted || !user) {
+        return
+      }
+
+      router.replace('/dashboard')
+      router.refresh()
+    }
+
+    void redirectAuthenticatedUser()
+
+    return () => {
+      isMounted = false
+    }
+  }, [router, supabase])
 
   const handleSignup = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -25,7 +50,13 @@ export default function SignupPage() {
     setError(null)
     setIsSubmitting(true)
 
-    const emailRedirectTo = `${window.location.origin}/auth/confirm?next=/auth/confirmed`
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.')
+      setIsSubmitting(false)
+      return
+    }
+
+    const emailRedirectTo = `${window.location.origin}/auth/callback?next=/dashboard`
 
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -67,6 +98,7 @@ export default function SignupPage() {
           type="email"
           placeholder="Email"
           required
+          autoComplete="email"
           disabled={isSubmitting}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -77,15 +109,34 @@ export default function SignupPage() {
           type="password"
           placeholder="Password"
           required
+          autoComplete="new-password"
           disabled={isSubmitting}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           className="rounded-xl border border-zinc-300 px-3 py-2 disabled:cursor-not-allowed disabled:bg-zinc-50"
         />
 
+        <div className="flex flex-col gap-2">
+          <input
+            type="password"
+            placeholder="Confirm Password"
+            required
+            autoComplete="new-password"
+            disabled={isSubmitting}
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            aria-invalid={passwordsMismatch}
+            className="rounded-xl border border-zinc-300 px-3 py-2 disabled:cursor-not-allowed disabled:bg-zinc-50"
+          />
+
+          {passwordsMismatch ? (
+            <p className="text-sm text-red-500">Passwords do not match.</p>
+          ) : null}
+        </div>
+
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isSubmitting || passwordsMismatch}
           className="rounded-full bg-zinc-950 px-4 py-2 text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-70"
         >
           {isSubmitting ? 'Creating Account...' : 'Sign Up'}
@@ -102,7 +153,8 @@ export default function SignupPage() {
 
         {!error ? (
           <p className="text-xs text-zinc-500">
-            We&apos;ll send a confirmation link to your email before you can sign in.
+            We&apos;ll send a confirmation link to finish setting up your account before you
+            can sign in.
           </p>
         ) : null}
       </form>
