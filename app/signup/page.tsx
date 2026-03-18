@@ -56,7 +56,7 @@ export default function SignupPage() {
       return
     }
 
-    const emailRedirectTo = `${window.location.origin}/auth/callback?next=/dashboard`
+    const emailRedirectTo = 'https://extractmetrics.com/auth/callback'
 
     const { data, error } = await supabase.auth.signUp({
       email,
