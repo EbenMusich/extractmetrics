@@ -42,7 +42,7 @@ export default async function EditRunPage({ params }: EditRunPageProps) {
   const { data: run, error } = await supabase
     .from('runs')
     .select(
-      'id, run_date, output_type, strain_name, grower_name, biomass_input_g, output_weight_g, solvent_used_g, labor_minutes, labor_rate, material_cost, cost_per_lb, utility_cost, other_cost, notes'
+      'id, run_date, operator_name, solvent_type, input_material_type, output_type, strain_name, grower_name, biomass_input_g, output_weight_g, solvent_used_g, labor_minutes, labor_rate, material_cost, cost_per_lb, utility_cost, other_cost, notes'
     )
     .eq('id', id)
     .eq('user_id', user.id)
@@ -85,6 +85,9 @@ export default async function EditRunPage({ params }: EditRunPageProps) {
           submitLabel="Save changes"
           initialValues={{
             run_date: run.run_date ?? '',
+            operator_name: run.operator_name ?? '',
+            solvent_type: run.solvent_type ?? '',
+            input_material_type: run.input_material_type ?? '',
             output_type: run.output_type ?? '',
             strain_name: run.strain_name ?? '',
             grower_name: run.grower_name ?? '',

@@ -25,6 +25,19 @@ export default async function NewRunPage() {
       error instanceof Error ? error.message : 'Unable to load your saved defaults right now.'
   }
 
+  const initialRunValues = savedDefaults
+    ? {
+        operator_name: savedDefaults.operatorName ?? '',
+        solvent_type: savedDefaults.solventType ?? '',
+        input_material_type: savedDefaults.inputMaterialType ?? '',
+        output_type: savedDefaults.outputType ?? '',
+        labor_rate:
+          typeof savedDefaults.laborRate === 'number' && Number.isFinite(savedDefaults.laborRate)
+            ? savedDefaults.laborRate.toString()
+            : '',
+      }
+    : undefined
+
   return (
     <section className="space-y-8">
       <PageHeader
@@ -40,6 +53,7 @@ export default async function NewRunPage() {
         <NewRunForm
           title="New extraction run"
           description="Capture the key run details, measured output, and tracked costs for this extraction."
+          initialValues={initialRunValues}
           successRedirectTo="/dashboard"
         />
       </div>

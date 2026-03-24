@@ -37,6 +37,9 @@ const defaultState: CreateRunFormState = {
 
 type RunFormValues = {
   runDate: string
+  operatorName: string
+  solventType: string
+  inputMaterialType: string
   outputType: string
   strainName: string
   growerName: string
@@ -127,6 +130,9 @@ function createErrorState(
 function validateRunForm(formData: FormData) {
   const values: RunFormValues = {
     runDate: readText(formData, 'run_date'),
+    operatorName: readText(formData, 'operator_name'),
+    solventType: readText(formData, 'solvent_type'),
+    inputMaterialType: readText(formData, 'input_material_type'),
     strainName: readText(formData, 'strain_name'),
     growerName: readText(formData, 'grower_name'),
     outputType: readText(formData, 'output_type'),
@@ -216,6 +222,9 @@ function buildRunPayload(userId: string, values: RunFormValues) {
   return {
     user_id: userId,
     run_date: values.runDate,
+    operator_name: values.operatorName || null,
+    solvent_type: values.solventType || null,
+    input_material_type: values.inputMaterialType || null,
     strain_name: values.strainName,
     grower_name: values.growerName,
     biomass_input_g: values.biomassInputG ?? 0,

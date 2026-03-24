@@ -33,6 +33,9 @@ const initialState: CreateRunFormState = {
 
 export type RunFormValues = {
   run_date: string
+  operator_name: string
+  solvent_type: string
+  input_material_type: string
   output_type: string
   strain_name: string
   grower_name: string
@@ -82,6 +85,9 @@ function getTodayDateValue() {
 function createInitialValues(): RunFormValues {
   return {
     run_date: getTodayDateValue(),
+    operator_name: '',
+    solvent_type: '',
+    input_material_type: '',
     output_type: '',
     strain_name: '',
     grower_name: '',
@@ -102,6 +108,9 @@ function mergeInitialValues(initialValues?: Partial<RunFormValues>): RunFormValu
 
   return {
     run_date: initialValues?.run_date ?? defaults.run_date,
+    operator_name: initialValues?.operator_name ?? defaults.operator_name,
+    solvent_type: initialValues?.solvent_type ?? defaults.solvent_type,
+    input_material_type: initialValues?.input_material_type ?? defaults.input_material_type,
     output_type: initialValues?.output_type ?? defaults.output_type,
     strain_name: initialValues?.strain_name ?? defaults.strain_name,
     grower_name: initialValues?.grower_name ?? defaults.grower_name,
@@ -402,6 +411,48 @@ function RunEntryFormBody({
               onChange={(event) => onChange('run_date', event.target.value)}
               required
               aria-invalid={Boolean(fieldErrors.run_date)}
+              className={inputClass}
+            />
+          </FieldShell>
+
+          <FieldShell
+            label="Operator name"
+            helper="Optional. Track who ran or oversaw this extraction."
+          >
+            <input
+              name="operator_name"
+              type="text"
+              value={values.operator_name}
+              onChange={(event) => onChange('operator_name', event.target.value)}
+              placeholder="e.g. Alex"
+              className={inputClass}
+            />
+          </FieldShell>
+
+          <FieldShell
+            label="Solvent type"
+            helper="Optional. Use a consistent solvent label when tracked."
+          >
+            <input
+              name="solvent_type"
+              type="text"
+              value={values.solvent_type}
+              onChange={(event) => onChange('solvent_type', event.target.value)}
+              placeholder="e.g. Butane"
+              className={inputClass}
+            />
+          </FieldShell>
+
+          <FieldShell
+            label="Input material type"
+            helper="Optional. Example: Fresh frozen or cured flower."
+          >
+            <input
+              name="input_material_type"
+              type="text"
+              value={values.input_material_type}
+              onChange={(event) => onChange('input_material_type', event.target.value)}
+              placeholder="e.g. Fresh frozen"
               className={inputClass}
             />
           </FieldShell>
