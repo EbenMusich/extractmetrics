@@ -14,8 +14,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://extractmetrics.com"),
   title: "ExtractMetrics",
-  description: "Extraction run tracking, yield analytics, and cost visibility for cannabis labs",
+  description:
+    "Cannabis extraction software for tracking production runs, yield, output, and cost per gram.",
 };
 
 export default function RootLayout({

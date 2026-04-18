@@ -1,37 +1,74 @@
+import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 
+export const metadata: Metadata = {
+  title: 'ExtractMetrics | Cannabis Extraction Software for Run, Yield, and Cost Tracking',
+  description:
+    'Track extraction runs, yields, output, and cost per gram in one dashboard. Built for cannabis extraction labs that want clearer visibility than spreadsheets.',
+  alternates: {
+    canonical: '/',
+  },
+}
+
 const valueProps = [
   {
     title: 'Track extraction runs',
     description:
-      'Log run details in one place so your team can keep production records organized and searchable.',
+      'Log production runs, batch details, output, and solvent usage in one searchable system built for hydrocarbon lab workflows.',
   },
   {
-    title: 'Analyze yield performance',
+    title: 'Monitor yield and output',
     description:
-      'Review output trends over time to understand which processes are producing the best returns.',
+      'Review yield trends and finished output over time so your team can see which processes produce the strongest returns.',
   },
   {
-    title: 'Understand true cost per gram',
+    title: 'Understand cost per gram',
     description:
-      'Combine labor, materials, utilities, and other inputs to see the real economics behind every run.',
+      'Combine labor, materials, utilities, and other inputs to understand the true cost per gram behind every extraction run.',
   },
   {
-    title: 'Compare strains and growers',
+    title: 'Improve lab decision-making',
     description:
-      'Spot which source material delivers the strongest results across yield, output type, and profitability.',
+      'Compare source material, output type, and process performance to spot what is helping or hurting margins.',
   },
 ]
 
 const workflowSteps = [
   'Log each extraction run with core production data.',
-  'Track output, yield, solvent usage, and cost inputs.',
-  'Review dashboards to identify trends and outliers.',
-  'Use the data to improve sourcing, process, and margins.',
+  'Track yield, output, solvent usage, and cost inputs in one dashboard.',
+  'Review trends and outliers across batches, material, and process performance.',
+  'Use the data to improve hydrocarbon lab workflows, sourcing, and margins.',
 ]
+
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Organization',
+      name: 'ExtractMetrics',
+      url: 'https://extractmetrics.com',
+    },
+    {
+      '@type': 'WebSite',
+      name: 'ExtractMetrics',
+      url: 'https://extractmetrics.com',
+      description:
+        'Cannabis extraction software for tracking production runs, yield, output, and cost per gram.',
+    },
+    {
+      '@type': 'SoftwareApplication',
+      name: 'ExtractMetrics',
+      url: 'https://extractmetrics.com',
+      operatingSystem: 'Web',
+      applicationCategory: 'BusinessApplication',
+      description:
+        'Cannabis extraction software for tracking production runs, yield, output, and cost per gram.',
+    },
+  ],
+}
 
 export default async function Home() {
   const supabase = await createClient()
@@ -45,6 +82,10 @@ export default async function Home() {
 
   return (
     <main className="min-h-screen bg-white text-zinc-950">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
       <div className="mx-auto flex min-h-screen max-w-7xl flex-col px-6 py-6 sm:px-8 lg:px-12">
         <header className="flex items-center justify-between py-4">
           <Link href="/" className="text-lg font-semibold tracking-tight">
@@ -70,14 +111,14 @@ export default async function Home() {
         <section className="grid flex-1 items-center gap-14 py-16 lg:grid-cols-[1.1fr_0.9fr] lg:py-24">
           <div className="max-w-2xl">
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-zinc-500">
-              Built for cannabis extraction teams
+              Built for cannabis extraction and hydrocarbon lab workflows
             </p>
             <h1 className="mt-5 text-4xl font-semibold tracking-tight text-zinc-950 sm:text-5xl lg:text-6xl">
-              Extraction Run Tracking for Cannabis Labs
+              Cannabis Extraction Software for Run, Yield, and Cost Tracking
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-8 text-zinc-600">
-              ExtractMetrics helps labs log extraction runs, monitor yield performance, and
-              understand cost analytics so every batch is easier to evaluate and improve.
+              ExtractMetrics helps cannabis extraction labs log production runs, track yield,
+              monitor output, and understand cost per gram in one simple dashboard.
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -94,6 +135,17 @@ export default async function Home() {
                 Log In
               </Link>
             </div>
+
+            <p className="mt-4 max-w-xl text-sm leading-6 text-zinc-600">
+              Need a closer look at run-level workflows? Explore{' '}
+              <Link
+                href="/extraction-run-tracking-software"
+                className="font-medium text-zinc-950 underline underline-offset-4"
+              >
+                extraction run tracking software for cannabis labs
+              </Link>
+              .
+            </p>
           </div>
 
           <div className="lg:pl-4">
@@ -111,8 +163,9 @@ export default async function Home() {
           <div className="max-w-2xl">
             <h2 className="text-3xl font-semibold tracking-tight text-zinc-950">Why teams use ExtractMetrics</h2>
             <p className="mt-4 text-base leading-7 text-zinc-600">
-              Practical reporting for labs that need clearer visibility into run performance,
-              production efficiency, and profitability.
+              Practical cannabis extraction software for labs that need clearer visibility into
+              run performance, production efficiency, and profitability than spreadsheets can
+              provide.
             </p>
           </div>
 
@@ -134,7 +187,8 @@ export default async function Home() {
             <div className="max-w-2xl">
               <h2 className="text-3xl font-semibold tracking-tight text-zinc-950">How it works</h2>
               <p className="mt-4 text-base leading-7 text-zinc-600">
-                A simple workflow designed for day-to-day extraction operations.
+                A simple workflow designed for day-to-day extraction operations, from run
+                tracking to yield and cost analysis.
               </p>
             </div>
 
@@ -159,6 +213,16 @@ export default async function Home() {
                 Create an account to centralize run data, monitor key metrics, and improve
                 production decisions over time.
               </p>
+              <p className="mt-4 text-sm leading-6 text-zinc-400">
+                Prefer a quick overview first? Read more about{' '}
+                <Link
+                  href="/extraction-run-tracking-software"
+                  className="font-medium text-white underline underline-offset-4"
+                >
+                  extraction run tracking software
+                </Link>
+                .
+              </p>
             </div>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -181,6 +245,9 @@ export default async function Home() {
         <footer className="flex flex-col gap-4 border-t border-zinc-200 py-8 text-sm text-zinc-600 sm:flex-row sm:items-center sm:justify-between">
           <p className="font-medium text-zinc-950">ExtractMetrics</p>
           <div className="flex items-center gap-5">
+            <Link href="/extraction-run-tracking-software" className="transition hover:text-zinc-950">
+              Run Tracking Software
+            </Link>
             <Link href="/login" className="transition hover:text-zinc-950">
               Log In
             </Link>
