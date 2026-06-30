@@ -84,7 +84,13 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-white px-6 text-zinc-950">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-white px-6 py-8 text-zinc-950">
+      <Link
+        href="/"
+        className="mb-6 text-lg font-semibold tracking-tight transition hover:text-zinc-600"
+      >
+        ExtractMetrics
+      </Link>
       <form
         onSubmit={handleSignup}
         className="flex w-full max-w-sm flex-col gap-4 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm"
@@ -94,7 +100,11 @@ export default function SignupPage() {
           Create your account to start tracking extraction runs and performance trends.
         </p>
 
+        <label htmlFor="signup-email" className="sr-only">
+          Email
+        </label>
         <input
+          id="signup-email"
           type="email"
           placeholder="Email"
           required
@@ -105,7 +115,11 @@ export default function SignupPage() {
           className="rounded-xl border border-zinc-300 px-3 py-2 disabled:cursor-not-allowed disabled:bg-zinc-50"
         />
 
+        <label htmlFor="signup-password" className="sr-only">
+          Password
+        </label>
         <input
+          id="signup-password"
           type="password"
           placeholder="Password"
           required
@@ -117,7 +131,11 @@ export default function SignupPage() {
         />
 
         <div className="flex flex-col gap-2">
+          <label htmlFor="signup-confirm-password" className="sr-only">
+            Confirm password
+          </label>
           <input
+            id="signup-confirm-password"
             type="password"
             placeholder="Confirm Password"
             required
@@ -130,7 +148,9 @@ export default function SignupPage() {
           />
 
           {passwordsMismatch ? (
-            <p className="text-sm text-red-500">Passwords do not match.</p>
+            <p role="alert" className="text-sm text-red-500">
+              Passwords do not match.
+            </p>
           ) : null}
         </div>
 
@@ -149,7 +169,11 @@ export default function SignupPage() {
           </Link>
         </p>
 
-        {error ? <p className="text-sm text-red-500">{error}</p> : null}
+        {error ? (
+          <p role="alert" className="text-sm text-red-500">
+            {error}
+          </p>
+        ) : null}
 
         {!error ? (
           <p className="text-xs text-zinc-500">

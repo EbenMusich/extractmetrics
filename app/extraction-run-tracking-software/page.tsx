@@ -5,9 +5,29 @@ import Link from 'next/link'
 export const metadata: Metadata = {
   title: 'Extraction Run Tracking Software for Cannabis Labs | ExtractMetrics',
   description:
-    'Track extraction runs, yields, output, solvent usage, and cost data in one dashboard. See why cannabis labs use ExtractMetrics instead of spreadsheets.',
+    'Track extraction runs, yields, output, solvent usage, and cost per gram in one dashboard. Built for cannabis extraction operators moving off spreadsheets.',
   alternates: {
     canonical: '/extraction-run-tracking-software',
+  },
+  openGraph: {
+    title: 'Extraction Run Tracking Software for Cannabis Labs | ExtractMetrics',
+    description:
+      'Track extraction runs, yields, output, solvent usage, and cost per gram in one dashboard. Built for cannabis extraction operators moving off spreadsheets.',
+    url: '/extraction-run-tracking-software',
+    images: [
+      {
+        url: '/dashboard-preview.png',
+        width: 1200,
+        height: 800,
+        alt: 'ExtractMetrics dashboard for extraction run tracking software',
+      },
+    ],
+  },
+  twitter: {
+    title: 'Extraction Run Tracking Software for Cannabis Labs | ExtractMetrics',
+    description:
+      'Track extraction runs, yields, output, solvent usage, and cost per gram in one dashboard. Built for cannabis extraction operators moving off spreadsheets.',
+    images: ['/dashboard-preview.png'],
   },
 }
 
@@ -45,14 +65,20 @@ const softwareComparison = [
 
 export default function ExtractionRunTrackingSoftwarePage() {
   return (
-    <main className="min-h-screen bg-white text-zinc-950">
+    <main id="main-content" className="min-h-screen bg-white text-zinc-950">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-6 focus:top-6 focus:z-50 focus:rounded-full focus:bg-zinc-950 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
+      >
+        Skip to main content
+      </a>
       <div className="mx-auto flex min-h-screen max-w-7xl flex-col px-6 py-6 sm:px-8 lg:px-12">
-        <header className="flex items-center justify-between py-4">
+        <header className="flex flex-wrap items-center justify-between gap-4 py-4">
           <Link href="/" className="text-lg font-semibold tracking-tight">
             ExtractMetrics
           </Link>
 
-          <nav className="flex items-center gap-3 text-sm font-medium">
+          <nav aria-label="Primary" className="flex flex-wrap items-center gap-2 sm:gap-3 text-sm font-medium">
             <Link
               href="/login"
               className="rounded-full px-4 py-2 text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-950"
@@ -71,19 +97,20 @@ export default function ExtractionRunTrackingSoftwarePage() {
         <section className="grid gap-14 py-16 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:py-24">
           <div className="max-w-2xl">
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-zinc-500">
-              Built for cannabis extraction labs
+              Built for cannabis extraction and hydrocarbon lab workflows
             </p>
             <h1 className="mt-5 text-4xl font-semibold tracking-tight text-zinc-950 sm:text-5xl lg:text-6xl">
               Extraction Run Tracking Software for Cannabis Labs
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-8 text-zinc-600">
-              ExtractMetrics gives cannabis labs a simple way to track runs, yields, output,
-              solvent usage, and cost data without relying on disconnected spreadsheets.
+              ExtractMetrics gives extraction operators a simple way to log runs, track yields,
+              monitor output, and record solvent usage without relying on disconnected
+              spreadsheets.
             </p>
             <p className="mt-4 max-w-xl text-base leading-7 text-zinc-600">
-              Built for day-to-day production workflows, the software helps hydrocarbon labs keep
-              cleaner records, compare performance over time, and understand cost per gram with
-              less manual work.
+              Built for day-to-day hydrocarbon lab workflows, the software helps operators keep
+              cleaner batch records, compare performance over time, and understand cost per gram
+              with less manual work.
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -108,6 +135,7 @@ export default function ExtractionRunTrackingSoftwarePage() {
               alt="ExtractMetrics dashboard for extraction run tracking software"
               width={1200}
               height={800}
+              priority
               className="h-auto w-full rounded-xl border border-zinc-200 shadow-[0_24px_50px_-24px_rgba(15,23,42,0.28)]"
             />
           </div>
@@ -116,11 +144,12 @@ export default function ExtractionRunTrackingSoftwarePage() {
         <section className="py-16">
           <div className="max-w-2xl">
             <h2 className="text-3xl font-semibold tracking-tight text-zinc-950">
-              What the software helps you manage
+              What operators track on every run
             </h2>
             <p className="mt-4 text-base leading-7 text-zinc-600">
-              ExtractMetrics is designed to give cannabis labs clearer visibility into production
-              performance so teams can move from record-keeping to operational improvement.
+              ExtractMetrics is designed to give extraction operators clearer visibility into
+              production performance so teams can move from record-keeping to operational
+              improvement.
             </p>
           </div>
 
@@ -130,7 +159,7 @@ export default function ExtractionRunTrackingSoftwarePage() {
                 key={item.title}
                 className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm"
               >
-                <h2 className="text-lg font-semibold text-zinc-950">{item.title}</h2>
+                <h3 className="text-lg font-semibold text-zinc-950">{item.title}</h3>
                 <p className="mt-3 text-sm leading-6 text-zinc-600">{item.description}</p>
               </article>
             ))}
@@ -152,7 +181,7 @@ export default function ExtractionRunTrackingSoftwarePage() {
             <div className="mt-10 grid gap-4 lg:grid-cols-2">
               <div className="rounded-3xl border border-zinc-200 bg-white p-6">
                 <h3 className="text-lg font-semibold text-zinc-950">Spreadsheets</h3>
-                <ul className="mt-4 space-y-3 text-sm leading-6 text-zinc-600">
+                <ul className="mt-4 list-disc space-y-3 pl-5 text-sm leading-6 text-zinc-600">
                   {spreadsheetComparison.map((item) => (
                     <li key={item}>{item}</li>
                   ))}
@@ -161,7 +190,7 @@ export default function ExtractionRunTrackingSoftwarePage() {
 
               <div className="rounded-3xl border border-zinc-200 bg-white p-6">
                 <h3 className="text-lg font-semibold text-zinc-950">ExtractMetrics</h3>
-                <ul className="mt-4 space-y-3 text-sm leading-6 text-zinc-600">
+                <ul className="mt-4 list-disc space-y-3 pl-5 text-sm leading-6 text-zinc-600">
                   {softwareComparison.map((item) => (
                     <li key={item}>{item}</li>
                   ))}
@@ -188,7 +217,7 @@ export default function ExtractionRunTrackingSoftwarePage() {
                 href="/signup"
                 className="inline-flex items-center justify-center rounded-full bg-white px-6 py-3 text-sm font-semibold text-zinc-950 transition hover:bg-zinc-100"
               >
-                Sign Up
+                Start Tracking Runs
               </Link>
               <Link
                 href="/login"
@@ -202,7 +231,7 @@ export default function ExtractionRunTrackingSoftwarePage() {
 
         <footer className="flex flex-col gap-4 border-t border-zinc-200 py-8 text-sm text-zinc-600 sm:flex-row sm:items-center sm:justify-between">
           <p className="font-medium text-zinc-950">ExtractMetrics</p>
-          <div className="flex items-center gap-5">
+          <nav aria-label="Footer" className="flex flex-wrap items-center gap-x-5 gap-y-2">
             <Link href="/" className="transition hover:text-zinc-950">
               Home
             </Link>
@@ -212,7 +241,7 @@ export default function ExtractionRunTrackingSoftwarePage() {
             <Link href="/signup" className="transition hover:text-zinc-950">
               Sign Up
             </Link>
-          </div>
+          </nav>
         </footer>
       </div>
     </main>

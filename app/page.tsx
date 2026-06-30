@@ -11,6 +11,26 @@ export const metadata: Metadata = {
   alternates: {
     canonical: '/',
   },
+  openGraph: {
+    title: 'ExtractMetrics | Cannabis Extraction Software for Run, Yield, and Cost Tracking',
+    description:
+      'Track extraction runs, yields, output, and cost per gram in one dashboard. Built for cannabis extraction labs that want clearer visibility than spreadsheets.',
+    url: '/',
+    images: [
+      {
+        url: '/dashboard-preview.png',
+        width: 1200,
+        height: 800,
+        alt: 'ExtractMetrics dashboard showing extraction run analytics',
+      },
+    ],
+  },
+  twitter: {
+    title: 'ExtractMetrics | Cannabis Extraction Software for Run, Yield, and Cost Tracking',
+    description:
+      'Track extraction runs, yields, output, and cost per gram in one dashboard. Built for cannabis extraction labs that want clearer visibility than spreadsheets.',
+    images: ['/dashboard-preview.png'],
+  },
 }
 
 const valueProps = [
@@ -30,9 +50,9 @@ const valueProps = [
       'Combine labor, materials, utilities, and other inputs to understand the true cost per gram behind every extraction run.',
   },
   {
-    title: 'Improve lab decision-making',
+    title: 'Improve production decisions',
     description:
-      'Compare source material, output type, and process performance to spot what is helping or hurting margins.',
+      'Compare source material, output type, and process performance to spot what is helping or hurting margins on the production floor.',
   },
 ]
 
@@ -81,18 +101,24 @@ export default async function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-white text-zinc-950">
+    <main id="main-content" className="min-h-screen bg-white text-zinc-950">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-6 focus:top-6 focus:z-50 focus:rounded-full focus:bg-zinc-950 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
+      >
+        Skip to main content
+      </a>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
       <div className="mx-auto flex min-h-screen max-w-7xl flex-col px-6 py-6 sm:px-8 lg:px-12">
-        <header className="flex items-center justify-between py-4">
+        <header className="flex flex-wrap items-center justify-between gap-4 py-4">
           <Link href="/" className="text-lg font-semibold tracking-tight">
             ExtractMetrics
           </Link>
 
-          <nav className="flex items-center gap-3 text-sm font-medium">
+          <nav aria-label="Primary" className="flex flex-wrap items-center gap-2 sm:gap-3 text-sm font-medium">
             <Link
               href="/login"
               className="rounded-full px-4 py-2 text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-950"
@@ -154,6 +180,7 @@ export default async function Home() {
               alt="ExtractMetrics dashboard showing extraction run analytics"
               width={1200}
               height={800}
+              priority
               className="h-auto w-full rounded-xl border border-zinc-200 shadow-[0_24px_50px_-24px_rgba(15,23,42,0.28)]"
             />
           </div>
@@ -161,10 +188,12 @@ export default async function Home() {
 
         <section className="py-16">
           <div className="max-w-2xl">
-            <h2 className="text-3xl font-semibold tracking-tight text-zinc-950">Why teams use ExtractMetrics</h2>
+            <h2 className="text-3xl font-semibold tracking-tight text-zinc-950">
+              What operators track with ExtractMetrics
+            </h2>
             <p className="mt-4 text-base leading-7 text-zinc-600">
-              Practical cannabis extraction software for labs that need clearer visibility into
-              run performance, production efficiency, and profitability than spreadsheets can
+              Practical cannabis extraction software for operators who need clearer visibility
+              into run performance, yield trends, and cost per gram than spreadsheets can
               provide.
             </p>
           </div>
@@ -244,7 +273,7 @@ export default async function Home() {
 
         <footer className="flex flex-col gap-4 border-t border-zinc-200 py-8 text-sm text-zinc-600 sm:flex-row sm:items-center sm:justify-between">
           <p className="font-medium text-zinc-950">ExtractMetrics</p>
-          <div className="flex items-center gap-5">
+          <nav aria-label="Footer" className="flex flex-wrap items-center gap-x-5 gap-y-2">
             <Link href="/extraction-run-tracking-software" className="transition hover:text-zinc-950">
               Run Tracking Software
             </Link>
@@ -254,7 +283,7 @@ export default async function Home() {
             <Link href="/signup" className="transition hover:text-zinc-950">
               Sign Up
             </Link>
-          </div>
+          </nav>
         </footer>
       </div>
     </main>

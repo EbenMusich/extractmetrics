@@ -1,6 +1,20 @@
+import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { LoginForm } from './login-form'
+
+export const metadata: Metadata = {
+  title: 'Log In | ExtractMetrics',
+  description:
+    'Sign in to access your extraction dashboard, run history, and performance analytics.',
+  alternates: {
+    canonical: '/login',
+  },
+  robots: {
+    index: false,
+    follow: true,
+  },
+}
 
 type LoginPageProps = {
   searchParams: Promise<{

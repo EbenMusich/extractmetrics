@@ -18,6 +18,14 @@ export const metadata: Metadata = {
   title: "ExtractMetrics",
   description:
     "Cannabis extraction software for tracking production runs, yield, output, and cost per gram.",
+  openGraph: {
+    type: "website",
+    siteName: "ExtractMetrics",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
 };
 
 export default function RootLayout({
